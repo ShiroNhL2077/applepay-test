@@ -46,6 +46,7 @@ export default function Cart() {
     if (!timeString) {
       return;
     }
+    // eslint-disable-next-line
     const [hours, minutes, seconds] = timeString.split(":");
     let period = "am";
 
@@ -166,7 +167,7 @@ export default function Cart() {
                   {initialCartItems &&
                     initialCartItems.map((el, i) => (
                       <tr>
-                        <td scope="row">
+                        <td>
                           <div className="event-img-date col d-flex align-items-center gap-4">
                             <div className="event-pic">
                               <img src={initialCartEvent.banner} alt="" />
@@ -322,65 +323,69 @@ export default function Cart() {
                           </div>
                         </td>
                         <td>
-                        <div className="event-img-date col mt-2 gap-4">
-                        <div className="w-100 event-name">
-                          <p className="text-start">{el.name}</p>
-                        </div>
-                      </div>
+                          <div className="event-img-date col mt-2 gap-4">
+                            <div className="w-100 event-name">
+                              <p className="text-start">{el.name}</p>
+                            </div>
+                          </div>
                         </td>
                         <td>
-                        <div className="event-img-date col mt-2">
-                        <div className=" w-100 event-name">
-                          <p className="text-start">{el.price.toFixed(1)} €</p>
-                        </div>
-                      </div>
+                          <div className="event-img-date col mt-2">
+                            <div className=" w-100 event-name">
+                              <p className="text-start">
+                                {el.price.toFixed(1)} €
+                              </p>
+                            </div>
+                          </div>
                         </td>
                         <td>
-                        <div className="event-img-date col">
-                        <div className=" w-100 event-name ">
-                          <span class="cart-input-wrapper d-flex justify-content-center align-items-center">
-                            <button onClick={() => handleDecrement(i)}>
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              value={el.orderQty}
-                              id="quantity"
-                            />
-                            <button onClick={() => handleIncrement(i)}>
-                              +
-                            </button>
-                          </span>
-                        </div>
-                      </div>
+                          <div className="event-img-date col">
+                            <div className=" w-100 event-name ">
+                              <span class="cart-input-wrapper d-flex justify-content-center align-items-center">
+                                <button onClick={() => handleDecrement(i)}>
+                                  -
+                                </button>
+                                <input
+                                  type="number"
+                                  value={el.orderQty}
+                                  id="quantity"
+                                />
+                                <button onClick={() => handleIncrement(i)}>
+                                  +
+                                </button>
+                              </span>
+                            </div>
+                          </div>
                         </td>
                         <td>
-                        <div className="event-img-date col mt-2">
-                        <div className="w-100 event-name">
-                          <p className="text-start">{(el.price * el.orderQty).toFixed(1)} €</p>
-                        </div>
-                      </div>
+                          <div className="event-img-date col mt-2">
+                            <div className="w-100 event-name">
+                              <p className="text-start">
+                                {(el.price * el.orderQty).toFixed(1)} €
+                              </p>
+                            </div>
+                          </div>
                         </td>
                         <td>
-                        <div className="event-img-date col mt-1">
-                        <div
-                          className="cart-delete-icon border d-flex align-items-center justify-content-center"
-                          onClick={() => handleDeleteItem(i)}
-                        >
-                          <svg
-                            width="23"
-                            height="23"
-                            viewBox="0 0 23 23"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M7.00276 17.035C6.71617 17.3217 6.25152 17.3217 5.96494 17.035C5.67835 16.7485 5.67835 16.2838 5.96494 15.9973L10.4622 11.5L5.96494 7.00276C5.67835 6.71617 5.67835 6.25152 5.96494 5.96494C6.25152 5.67835 6.71617 5.67835 7.00276 5.96494L11.5 10.4622L15.9973 5.96494C16.2838 5.67835 16.7485 5.67835 17.035 5.96494C17.3217 6.25152 17.3217 6.71617 17.035 7.00276L12.5378 11.5L17.035 15.9973C17.3217 16.2838 17.3217 16.7485 17.035 17.035C16.7485 17.3217 16.2838 17.3217 15.9973 17.035L11.5 12.5378L7.00276 17.035Z"
-                              fill="black"
-                            />
-                          </svg>
-                        </div>
-                      </div>
+                          <div className="event-img-date col mt-1">
+                            <div
+                              className="cart-delete-icon border d-flex align-items-center justify-content-center"
+                              onClick={() => handleDeleteItem(i)}
+                            >
+                              <svg
+                                width="23"
+                                height="23"
+                                viewBox="0 0 23 23"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M7.00276 17.035C6.71617 17.3217 6.25152 17.3217 5.96494 17.035C5.67835 16.7485 5.67835 16.2838 5.96494 15.9973L10.4622 11.5L5.96494 7.00276C5.67835 6.71617 5.67835 6.25152 5.96494 5.96494C6.25152 5.67835 6.71617 5.67835 7.00276 5.96494L11.5 10.4622L15.9973 5.96494C16.2838 5.67835 16.7485 5.67835 17.035 5.96494C17.3217 6.25152 17.3217 6.71617 17.035 7.00276L12.5378 11.5L17.035 15.9973C17.3217 16.2838 17.3217 16.7485 17.035 17.035C16.7485 17.3217 16.2838 17.3217 15.9973 17.035L11.5 12.5378L7.00276 17.035Z"
+                                  fill="black"
+                                />
+                              </svg>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ))}

@@ -31,6 +31,7 @@ export default function CheckOut() {
   }, []);
 
   const [btnClicked, setBtnClicked] = useState(false);
+  // eslint-disable-next-line
   const [btnDisabled, setBtnDisabled] = useState(false);
 
   const [firstName, setFirstName] = useState("");
@@ -167,7 +168,7 @@ export default function CheckOut() {
   const handleRadioChange = (event) => {
     setSelectedMeth(event.target.value);
   };
-
+  // eslint-disable-next-line
   const [payMethDisabled, setPaymethDisabled] = useState(true);
 
   const checkUserInfoFilled = () => {

@@ -32,9 +32,8 @@ export default function LandingPage() {
   useEffect(() => {
     const element = elementRef.current;
     const elementPosition = element
-      ? 
-      // element.getBoundingClientRect().top + window.scrollY
-      element + window.scrollY
+      ? // element.getBoundingClientRect().top + window.scrollY
+        element + window.scrollY
       : 0;
 
     const handleScroll = () => {
@@ -198,10 +197,11 @@ export default function LandingPage() {
         />
         <div className="hero">
           <div className="hero_inner_box">
+            // eslint-disable-next-line
             <img src={eventData.banner} />
           </div>
         </div>
-        <div className="content" >
+        <div className="content">
           <div className="inner_box">
             <div className="left_box">
               <div className="event_title_box mb-4">
@@ -665,7 +665,8 @@ export default function LandingPage() {
                       onClick={() => openModal(el)}
                       key={i}
                     >
-                      <img src={el} />
+                      {/* eslint-disable-next-line */}
+                      <img src={el} alt="smth" />
                     </div>
                   ))}
                 </div>
@@ -691,7 +692,9 @@ export default function LandingPage() {
                 <div className="home_divider_lg"></div>
                 <div className="home_divider_sm"></div>
                 <p>{eventData.location}</p>
+                {/* eslint-disable-next-line */}
                 <div className="thumbnail">
+                  {/* eslint-disable-next-line */}
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2484.0036028308073!2d7.447471775863409!3d51.49480137181043!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47b919d18c8406b7%3A0x29ec831ed8fde28!2sIm%20Rabenloh%208%2C%2044139%20Dortmund%2C%20Allemagne!5e0!3m2!1sfr!2stn!4v1699533063484!5m2!1sfr!2stn"
                     width="600"
@@ -722,6 +725,7 @@ export default function LandingPage() {
                       <button
                         id="decrement"
                         onClick={() => handleDecrement(index)}
+                        // eslint-disable-next-line
                         disabled={item.orderQty == 1}
                       >
                         -

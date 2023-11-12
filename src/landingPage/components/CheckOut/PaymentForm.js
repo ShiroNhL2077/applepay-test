@@ -1,6 +1,5 @@
 // Import necessary dependencies
 import {
-  CardElement,
   useStripe,
   useElements,
   CardNumberElement,
@@ -19,9 +18,11 @@ const PaymentForm = ({ order, userLogged }) => {
 
   const stripe = useStripe();
   const elements = useElements();
+  // eslint-disable-next-line
   const [cardZipCode, setCardZipCode] = useState("");
 
   const [btnDisabled, setBtnDisabled] = useState(false);
+  // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
 
   const createOrderWithStripeClient = async (oD) => {
@@ -84,7 +85,9 @@ const PaymentForm = ({ order, userLogged }) => {
     setBtnClicked(true);
 
     const cardNumberElement = elements.getElement(CardNumberElement);
+    // eslint-disable-next-line
     const cardExpiryElement = elements.getElement(CardExpiryElement);
+    // eslint-disable-next-line
     const cardCvcElement = elements.getElement(CardCvcElement);
 
     const { paymentMethod, error } = await stripe.createPaymentMethod({

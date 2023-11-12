@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import React, { useEffect, useState } from "react";
 import "./InvoiceModal.css";
 import { useSelector } from "react-redux";

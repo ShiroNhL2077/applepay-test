@@ -278,7 +278,7 @@ export default function InvoiceModal({
                     <tbody>
                       {clickedInvoice?.tickets?.map((ticket, i) => (
                         <tr>
-                          <td scope="row">1</td>
+                          <td>1</td>
                           <td>{clickedInvoice?.event.eventName}</td>
                           <td>{ticket?.ticket?.name}</td>
                           <td>{ticket?.ticket?.price} €</td>

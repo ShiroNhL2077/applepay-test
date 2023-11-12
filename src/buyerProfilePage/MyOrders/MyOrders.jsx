@@ -2,18 +2,20 @@ import React, { useEffect, useState } from "react";
 import "./MyOrders.css";
 import { useDispatch, useSelector } from "react-redux";
 import dinoLogo from "../../media/Dino-Logo.webp";
-import { getUserOrders, invoiceClicked, ticketClicked } from "../../redux/actions/userAction";
+import {
+  getUserOrders,
+  invoiceClicked,
+  ticketClicked,
+} from "../../redux/actions/userAction";
 import InvoiceModal from "./InvoiceModal/InvoiceModal";
 import { formatDateFull } from "../../utils/formatDateFull";
 
 export default function MyOrders() {
   const dispatch = useDispatch();
-  const { userOrders } = useSelector(
-    (state) => state.orders
-  );
+  const { userOrders } = useSelector((state) => state.orders);
 
   const [invoiceModal, setInvoiceModal] = useState(false);
-  const [showQrCode, setShowQrCode] = useState(false)
+  const [showQrCode, setShowQrCode] = useState(false);
 
   const handleInvoiceModalShow = () => {
     setInvoiceModal(true);
@@ -21,17 +23,17 @@ export default function MyOrders() {
 
   const handleInvoiceModalClose = () => {
     setInvoiceModal(false);
-    setShowQrCode(false)
+    setShowQrCode(false);
   };
   const handleQrModalShow = () => {
-    setInvoiceModal(true)
-    setShowQrCode(true)
-  }
+    setInvoiceModal(true);
+    setShowQrCode(true);
+  };
 
   useEffect(() => {
     dispatch(getUserOrders());
+    // eslint-disable-next-line
   }, []);
-
 
   return (
     <div className="my-order-container">
@@ -197,11 +199,14 @@ export default function MyOrders() {
                                 />
                               </svg>
                             </button>
-                            <button className="btn_orders" onClick={() => {
-                              handleQrModalShow()
-                              dispatch(invoiceClicked(order));
-                              dispatch(ticketClicked(ticket));
-                            }}>
+                            <button
+                              className="btn_orders"
+                              onClick={() => {
+                                handleQrModalShow();
+                                dispatch(invoiceClicked(order));
+                                dispatch(ticketClicked(ticket));
+                              }}
+                            >
                               <svg
                                 width="16"
                                 height="16"

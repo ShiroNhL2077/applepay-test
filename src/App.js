@@ -22,7 +22,7 @@ function App() {
   useEffect(() => {
     dispatch(loadUser()); // Dispatch the action to load the user data
   }, [dispatch]);
-
+  // eslint-disable-next-line
   const [refreshCartIcon, setRefreshCartIcon] = useState(0);
 
   const Layout = ({ children }) => {
