@@ -153,7 +153,7 @@
   height: 50px;
   border-radius: 0px 0px 21.5px 21.5px;
   display: flex;
-  justify-content: end;
+  justify-content: flex-end;
 }
 .ordr-ttl {
   width: calc(100% / 3);

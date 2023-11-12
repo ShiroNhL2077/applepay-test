@@ -197,8 +197,7 @@ export default function LandingPage() {
         />
         <div className="hero">
           <div className="hero_inner_box">
-            // eslint-disable-next-line
-            <img src={eventData.banner} />
+            <img src={eventData.banner} alt="event banner" />
           </div>
         </div>
         <div className="content">
