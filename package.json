@@ -42,9 +42,16 @@
       "react-app",
       "react-app/jest"
     ],
-    "ignore": [
-      "**/*.js",
-      "**/*.jsx"
+    "overrides": [
+      {
+        "files": [
+          "**/*.js",
+          "**/*.jsx"
+        ],
+        "rules": {
+          "@typescript-eslint/no-explicit-any": "off"
+        }
+      }
     ]
   },
   "browserslist": {
