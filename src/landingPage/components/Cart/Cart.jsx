@@ -46,7 +46,7 @@ export default function Cart() {
     if (!timeString) {
       return;
     }
-    // eslint-disable-next-line
+    
     const [hours, minutes, seconds] = timeString.split(":");
     let period = "am";
 

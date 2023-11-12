@@ -41,6 +41,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
+    ],
+    "ignore": [
+      "**/*.js",
+      "**/*.jsx"
     ]
   },
   "browserslist": {

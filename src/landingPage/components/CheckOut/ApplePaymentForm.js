@@ -19,7 +19,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
   const elements = useElements();
 
   const [btnDisabled, setBtnDisabled] = useState(false);
-  // eslint-disable-next-line
+  
   const [btnClicked, setBtnClicked] = useState(false);
 
   const createOrderWithStripeClient = async (oD) => {

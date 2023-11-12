@@ -724,7 +724,7 @@ export default function LandingPage() {
                       <button
                         id="decrement"
                         onClick={() => handleDecrement(index)}
-                        // eslint-disable-next-line
+                        
                         disabled={item.orderQty == 1}
                       >
                         -

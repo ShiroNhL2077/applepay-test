@@ -32,7 +32,7 @@ export default function MyOrders() {
 
   useEffect(() => {
     dispatch(getUserOrders());
-    // eslint-disable-next-line
+    
   }, []);
 
   return (
