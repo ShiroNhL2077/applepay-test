@@ -1,0 +1,149 @@
+/* signin modal */
+
+@media (max-width: 576px) {
+  .signin_modal .modal-body,
+  .signin_modal .modal-footer {
+    padding: 0 5rem;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .signin_modal .modal-dialog {
+    max-width: 80%;
+  }
+
+  .signin_modal .modal-body,
+  .signin_modal .modal-footer {
+    padding: 0 5rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+  .signin_modal .modal-dialog {
+    max-width: 60%;
+  }
+
+  .signin_modal .modal-body,
+  .signin_modal .modal-footer {
+    padding: 0 5rem;
+  }
+}
+
+@media (min-width: 992px) and (max-width: 1700px) {
+  /* .signin_modal .modal-dialog {
+      max-width: 35%;
+    } */
+
+  .signin_modal .modal-body,
+  .signin_modal .modal-footer {
+    padding: 0 5rem;
+  }
+}
+
+@media (min-width: 1700px) {
+  .signin_modal .modal-dialog {
+    max-width: 30%;
+  }
+
+  .signin_modal .modal-body,
+  .signin_modal .modal-footer {
+    padding: 0 6rem;
+  }
+}
+
+.signin_modal .modal-content {
+  border-radius: 40px !important;
+  background: #fff !important;
+}
+
+.signin_modal .btn-close {
+  background-image: url('data:image/svg+xml,<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.30723 11.7757C1.00818 12.0748 0.523328 12.0748 0.224288 11.7757C-0.0747625 11.4767 -0.0747625 10.9918 0.224288 10.6928L4.9171 6L0.224288 1.30723C-0.0747625 1.00818 -0.0747625 0.523328 0.224288 0.224288C0.523328 -0.0747625 1.00818 -0.0747625 1.30723 0.224288L6 4.9171L10.6928 0.224288C10.9918 -0.0747625 11.4767 -0.0747625 11.7757 0.224288C12.0748 0.523328 12.0748 1.00818 11.7757 1.30723L7.0829 6L11.7757 10.6928C12.0748 10.9918 12.0748 11.4767 11.7757 11.7757C11.4767 12.0748 10.9918 12.0748 10.6928 11.7757L6 7.0829L1.30723 11.7757Z" fill="%2364C3C5"/></svg>') !important;
+  background-color: #d5eeef;
+  opacity: 1;
+  margin: 0;
+  align-self: flex-end;
+}
+
+.signin_modal .modal-header {
+  flex-direction: column-reverse;
+  border-bottom: none;
+}
+
+.signin_modal .modal-title {
+  width: 100%;
+  color: #1f2349;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 165.523%;
+  text-transform: capitalize;
+}
+
+.signin_modal ._input_group .input-group-text:not(.show_pw_btn) {
+  background-color: #fff !important;
+  border: 1px solid #9fafe7 !important;
+  border-right: none !important;
+  border-radius: 80px;
+}
+
+.signin_modal ._input_group .form-control {
+  background-color: #fff !important;
+  border: 1px solid #9fafe7 !important;
+  border-left: none !important;
+  border-radius: 80px;
+  padding: 0.7rem 1rem;
+}
+
+.signin_modal ._input_group .form-control._pw_input,
+.signin_modal ._input_group .form-control.reset_pw_input {
+  border-right: none !important;
+}
+
+.signin_modal .modal-footer {
+  border-top: none;
+}
+
+.signin_modal .modal-footer .signin_btn {
+  width: 100%;
+  border-radius: 80px;
+  background: #444790;
+  padding: 0.7rem 1rem;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.signin_modal .modal-body .signin_notif ._link {
+  color: #57bec0;
+  text-decoration: underline;
+}
+
+.signin_modal .modal-body .signin_notif ._link:hover {
+  cursor: pointer;
+}
+
+.signin_modal .modal-footer .signin_notif {
+  color: #444790;
+  text-transform: capitalize;
+  font-weight: 400;
+}
+
+.signin_modal .modal-footer .signin_notif ._link {
+  color: #57bec0;
+  text-decoration: underline;
+  display: inline;
+}
+
+.signin_modal .modal-footer .signin_notif ._link:hover {
+  cursor: pointer;
+}
+
+.show_pw_btn {
+  background-color: #fff !important;
+  border: 1px solid #9fafe7 !important;
+  border-left: none !important;
+  border-radius: 80px;
+}
+
+.show_pw_btn:hover {
+  cursor: pointer;
+}

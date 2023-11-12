@@ -1,0 +1,164 @@
+// <Form className="_card_details mt-3">
+                  //   <div className="row">
+                  //     <div className=" col-12">
+                  //       <InputGroup className="mb-4 _input _card_number">
+                  //         <Form.Control
+                  //           placeholder="Card number"
+                  //           aria-label="card number"
+                  //           aria-describedby="card-number"
+                  //           value={cardNumber}
+                  //           maxLength={16}
+                  //           onChange={(e) => {
+                  //             onCardNumberChange(e);
+                  //           }}
+                  //           // onKeyPress={handleKeyPress}
+                  //         />
+                  //         <InputGroup.Text id="card-number">
+                  //           <svg
+                  //             xmlns="http://www.w3.org/2000/svg"
+                  //             width="25"
+                  //             height="26"
+                  //             viewBox="0 0 25 26"
+                  //             fill="none"
+                  //           >
+                  //             <g clip-path="url(#clip0_209_3393)">
+                  //               <path
+                  //                 d="M22.92 4.95215H2.07966C1.25882 4.95215 0.591064 5.6199 0.591064 6.44074V18.8637C0.591064 19.6845 1.25882 20.3523 2.07966 20.3523H22.92C23.7408 20.3523 24.4086 19.6845 24.4086 18.8637V6.44074C24.4086 5.61985 23.7409 4.95215 22.92 4.95215ZM2.07966 5.44833H22.92C23.4673 5.44833 23.9124 5.8934 23.9124 6.44074V8.10207H1.08725V6.44074C1.08725 5.8934 1.53232 5.44833 2.07966 5.44833ZM22.92 19.856H2.07966C1.53232 19.856 1.08725 19.411 1.08725 18.8636V11.4779H23.9124V18.8637C23.9124 19.411 23.4673 19.856 22.92 19.856Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //               <path
+                  //                 d="M13.5051 14.6948H3.06861C2.93147 14.6948 2.8205 14.8058 2.8205 14.9429C2.8205 15.0801 2.93147 15.1911 3.06861 15.1911H13.505C13.6422 15.1911 13.7531 15.0801 13.7531 14.9429C13.7531 14.8058 13.6422 14.6948 13.5051 14.6948Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //               <path
+                  //                 d="M8.47837 16.6108H3.06861C2.93147 16.6108 2.8205 16.7218 2.8205 16.859C2.8205 16.9961 2.93147 17.1071 3.06861 17.1071H8.47832C8.61546 17.1071 8.72644 16.9961 8.72644 16.859C8.72644 16.7218 8.61551 16.6108 8.47837 16.6108Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //               <path
+                  //                 d="M21.931 16.6108H21.3565C21.2194 16.6108 21.1084 16.7218 21.1084 16.859C21.1084 16.9961 21.2194 17.1071 21.3565 17.1071H21.931C22.0681 17.1071 22.1791 16.9961 22.1791 16.859C22.1791 16.7218 22.0681 16.6108 21.931 16.6108Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //               <path
+                  //                 d="M19.6387 16.6108H19.0643C18.9271 16.6108 18.8162 16.7218 18.8162 16.859C18.8162 16.9961 18.9271 17.1071 19.0643 17.1071H19.6387C19.7759 17.1071 19.8869 16.9961 19.8869 16.859C19.8869 16.7218 19.7759 16.6108 19.6387 16.6108Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //               <path
+                  //                 d="M17.3465 16.6108H16.772C16.6349 16.6108 16.5239 16.7218 16.5239 16.859C16.5239 16.9961 16.6349 17.1071 16.772 17.1071H17.3465C17.4837 17.1071 17.5946 16.9961 17.5946 16.859C17.5946 16.7218 17.4836 16.6108 17.3465 16.6108Z"
+                  //                 fill="#C3C9FF"
+                  //               />
+                  //             </g>
+                  //             <defs>
+                  //               <clipPath id="clip0_209_3393">
+                  //                 <rect
+                  //                   width="24.8991"
+                  //                   height="24.8991"
+                  //                   fill="white"
+                  //                   transform="translate(0.0502319 0.202637)"
+                  //                 />
+                  //               </clipPath>
+                  //             </defs>
+                  //           </svg>
+                  //         </InputGroup.Text>
+                  //       </InputGroup>
+                  //     </div>
+                  //     <div className="col-xl-4">
+                  //       <InputGroup className="mb-4 _input">
+                  //         <Form.Control
+                  //           placeholder="MM / YY"
+                  //           aria-label="exp-date"
+                  //           aria-describedby="exp-date"
+                  //           value={cardExpDate}
+                  //           maxLength={5}
+                  //           onChange={(e) => {
+                  //             onExpDateChange(e);
+                  //           }}
+                  //           // onKeyPress={handleKeyPress}
+                  //         />
+                  //       </InputGroup>
+                  //     </div>
+                  //     <div className="col-xl-4">
+                  //       <InputGroup className="mb-4 _input">
+                  //         <Form.Control
+                  //           placeholder="Security code"
+                  //           aria-label="security-code"
+                  //           aria-describedby="security-code"
+                  //           value={cardSecurityCode}
+                  //           onChange={(e) => {
+                  //             onSecurityCodeChange(e);
+                  //           }}
+                  //           maxLength={4}
+                  //           // onKeyPress={handleKeyPress}
+                  //         />
+                  //       </InputGroup>
+                  //     </div>
+                  //     <div className="col-xl-4">
+                  //       <InputGroup className="mb-4 _input">
+                  //         <Form.Control
+                  //           placeholder="Zip code"
+                  //           aria-label="zip-code"
+                  //           aria-describedby="zip-code"
+                  //           value={cardZipCode}
+                  //           maxLength={5}
+                  //           onChange={(e) => {
+                  //             onZipCodeChange(e);
+                  //           }}
+                  //           // onKeyPress={handleKeyPress}
+                  //         />
+                  //       </InputGroup>
+                  //     </div>
+                  //   </div>
+                  // </Form>
+
+// function formatTimeToAmPm(timeString) {
+  //   if (!timeString) {
+  //     return;
+  //   }
+  //   const [hours, minutes, seconds] = timeString.split(":");
+  //   let period = "am";
+
+  //   let hoursNum = parseInt(hours);
+  //   if (hoursNum >= 12) {
+  //     if (hoursNum > 12) {
+  //       hoursNum -= 12;
+  //     }
+  //     period = "pm";
+  //   } else if (hoursNum === 0) {
+  //     hoursNum = 12; // 0:00 (midnight) is 12:00 am
+  //   }
+
+  //   if (minutes === "00") {
+  //     return `${hoursNum}${period}`;
+  //   } else {
+  //     return `${hoursNum}:${minutes}${period}`;
+  //   }
+  // }
+
+  // function formatDateFull(inputDate) {
+  //   if (!inputDate) {
+  //     return;
+  //   }
+  //   const months = [
+  //     "January",
+  //     "February",
+  //     "March",
+  //     "April",
+  //     "May",
+  //     "June",
+  //     "July",
+  //     "August",
+  //     "September",
+  //     "October",
+  //     "November",
+  //     "December",
+  //   ];
+
+  //   const date = new Date(inputDate);
+  //   const dd = date.getUTCDate();
+  //   const mm = months[date.getUTCMonth()];
+  //   const yyyy = date.getUTCFullYear();
+
+  //   const formattedDate = `${dd} ${mm}, ${yyyy}`;
+
+  //   return formattedDate;
+  // }
+

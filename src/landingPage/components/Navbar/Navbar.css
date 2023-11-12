@@ -1,0 +1,133 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+  background-color: #fff;
+  box-shadow: 3px 3px 3px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header::before {
+  content: "";
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  /* backdrop-filter: blur(50px); */
+  z-index: -1;
+  
+}
+.header_innerbox {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.navbar {
+  padding-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.nav-item {
+  position: relative;
+  margin-left: 2rem;
+  transition: all 0.5s ease;
+  cursor: pointer;
+}
+
+.cart-number {
+  min-width:17px;
+  min-height:17px;
+  padding:0 3px;
+  line-height:17px;
+  background:#64C3C5;
+  color:#000;
+  border-radius:50%;
+  display:inline-block;
+  vertical-align:top;
+  text-align:center;
+  font-size:12px;
+  position:absolute;
+  top:0;
+  right:0;
+}
+
+@media (max-width: 992px) {
+  .header {
+    padding: 1.3rem 5%;
+  }
+}
+
+@media (max-width: 768px) {
+  #check:checked ~ .navbar {
+    height: 17.7rem;
+  }
+
+  #check:checked ~ .navbar a {
+    transform: translateY(0);
+    opacity: 1;
+    transition-delay: calc(0.15s * var(--i));
+  }
+}
+
+/* Define styles for the dropdown container */
+.dropdown {
+position: relative;
+/* display: inline-block; */
+
+}
+
+/* Style for the dropdown indicator (arrow or icon) */
+.dropdown-toggle {
+cursor: pointer;
+color: #f2f2f2;
+padding-right: 15px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 25px;
+}
+
+/* Define styles for the dropdown menu (initially hidden) */
+.dropdown-menu {
+display: none;
+position: absolute;
+right: 0.2rem;
+top: 1.3rem;
+background-color: #fff; 
+box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+z-index: 1;
+}
+
+/* Style the dropdown items */
+.dropdown-item {
+padding: 12px 16px;
+text-decoration: none;
+display: block;
+color: #333; 
+cursor: pointer;
+}
+
+/* Change background color on hover */
+.dropdown-item {
+background-color: #f2f2f2; /* Hover background color */
+}
+
+/* Show the dropdown menu when the parent .dropdown is hovered or clicked */
+.dropdown .dropdown-menu {
+display: block;
+}

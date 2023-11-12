@@ -1,0 +1,145 @@
+.buyer_profile_container {
+  margin-top: 100px;
+  padding: 1rem 10% 0;
+  flex-grow: 1;
+}
+.buyer_profile_container ._return_link span {
+  color: #1f2349 !important;
+  font-weight: 500;
+  text-decoration-line: underline;
+  text-decoration-color: #1f2349;
+  text-transform: capitalize;
+  margin-left: 0.5rem;
+}
+
+.buyer_profile_container ._actions_container ._image img {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.buyer_profile_container ._actions {
+  border-radius: 20px;
+  border: 1px solid rgba(68, 71, 144, 0.3);
+  padding: 2rem 1.5rem;
+}
+
+.buyer_profile_container ._actions ._divider {
+  height: 1px;
+  width: 100%;
+  background-color: #000;
+  margin-bottom: 1rem;
+}
+
+.buyer_profile_container ._actions ._action ._label {
+  color: #1f2349;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.buyer_profile_container ._actions ._button {
+  color: #aeafcf;
+  font-weight: 300;
+}
+
+.buyer_profile_container ._actions ._button svg {
+  margin-bottom: 0.2rem;
+}
+
+._actions_container .logout_action:hover {
+  cursor: pointer;
+}
+
+.buyer_profile_container ._info_container ._header ._title {
+  color: #1f2349;
+  text-align: start;
+  font-weight: 500;
+  margin-left: 1rem;
+}
+
+.buyer_profile_container ._info_container ._header ._divider {
+  height: 1px;
+  width: 100%;
+  background-color: #000;
+  margin-bottom: 3rem;
+}
+
+.buyer_profile_container ._info_container ._form ._input .input-group-text,
+.buyer_profile_container ._info_container ._form ._input .form-control,
+.buyer_profile_container ._info_container ._form ._input .form-select {
+  border-radius: 80px;
+  border: 1px solid #bdcaf7;
+}
+
+.buyer_profile_container ._info_container ._form ._input .input-group-text {
+  border-right: none !important;
+  background: #fff !important;
+}
+
+.buyer_profile_container ._info_container ._form ._input .form-control,
+.buyer_profile_container ._info_container ._form ._input .form-select {
+  border-left: none !important;
+  color: #bdcaf7;
+}
+
+.buyer_profile_container
+  ._info_container
+  ._form
+  ._input
+  .form-control::placeholder {
+  color: #444790;
+  opacity: 0.4;
+}
+
+._country_select {
+  background-image: url('data:image/svg+xml,<svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="38" rx="19" fill="%23BDCAF7" fill-opacity="0.37"/><path d="M19 23.6351C18.7849 23.6351 18.5699 23.5599 18.4059 23.4096L13.2462 18.6798C12.9179 18.379 12.9179 17.8912 13.2462 17.5904C13.5743 17.2897 14.1063 17.2897 14.4346 17.5904L19 21.7756L23.5654 17.5905C23.8936 17.2898 24.4256 17.2898 24.7537 17.5905C25.0821 17.8913 25.0821 18.3791 24.7537 18.68L19.594 23.4098C19.43 23.56 19.215 23.6351 19 23.6351Z" fill="%23444790"/></svg>');
+  background-size: 30px 60px;
+  background-position: right 0.25rem center;
+}
+
+.buyer_profile_container ._info_container ._form ._reset_button {
+  border-radius: 80px;
+  border: 1px solid #444790;
+  background: #fff;
+  color: #444790;
+  padding: 1rem 0;
+}
+
+.buyer_profile_container ._info_container ._form ._reset_button:hover,
+.buyer_profile_container ._info_container ._form ._reset_button:focus {
+  border-radius: 80px;
+  border: 1px solid #fff;
+  background: #444790;
+  color: #fff;
+  cursor: pointer;
+}
+
+.buyer_profile_container ._info_container ._form ._submit_button:hover,
+.buyer_profile_container ._info_container ._form ._submit_button:focus {
+  border-radius: 80px;
+  border: 1px solid #444790;
+  background: #fff;
+  color: #444790;
+  cursor: pointer;
+}
+
+.buyer_profile_container ._info_container ._form ._submit_button {
+  border-radius: 80px;
+  border: 1px solid #444790;
+  background: #444790;
+  padding: 1rem 0;
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .buyer_profile_container ._info_container ._form button {
+    width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .buyer_profile_container ._info_container ._form button {
+    width: 140px;
+  }
+}
+

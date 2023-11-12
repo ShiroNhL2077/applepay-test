@@ -1,0 +1,389 @@
+.dash_box {
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  overflow-y: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+}
+
+/* sidebar styles */
+
+.sidebar_nav {
+  text-align: start;
+  padding: 0;
+}
+
+.sidebar_nav_icon {
+  padding: 0.6rem;
+  background-color: #f5f7ff;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar_nav_element {
+  position: relative;
+}
+
+.sidebar_nav_element:hover,
+.sidebar_auth_element:hover {
+  cursor: pointer;
+}
+
+.sidebar_nav_element_selected .sidebar_nav_label {
+  font-weight: 700;
+}
+
+.sidebar_nav_element_selected::before {
+  content: ""; /* Required for pseudo-elements */
+  position: absolute; /* Position relative to the parent .element */
+  left: 0; /* Position on the left side */
+  top: 50%; /* Center vertically */
+  transform: translateY(-50%); /* Center vertically */
+  width: 4px; /* Width of the border */
+  height: 50%; /* Height of the border */
+  background-color: #57bec0; /* Color of the border */
+  /* You can also use border-left instead of background-color for border styling */
+  /* border-left: 2px solid #000; */
+}
+
+.sidebar_nav_element_selected svg path {
+  fill: #fff;
+}
+
+.sidebar_nav_element_selected .sidebar_nav_icon {
+  background-color: #57bec0;
+}
+
+.sidebar_auth_element_help {
+  color: #57bec0;
+}
+
+.sidebar_head {
+  height: 12%;
+}
+
+.sidebar_elements {
+  height: 88%;
+}
+
+/* sidebar behaviour styles */
+
+.content_box {
+  flex: 1;
+}
+
+.sidebar_collapsed .sidebar_nav_element {
+  justify-content: center;
+}
+
+.sidebar_expanded .sidebar_nav_element .sidebar_nav_icon {
+  margin: 0 1rem;
+}
+
+@media (min-width: 1440px) {
+  .sidebar_collapsed {
+    flex: 0 0 5%;
+    overflow-x: hidden;
+  }
+
+  .sidebar_expanded {
+    flex: 0 0 10%;
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1440px) {
+  .sidebar_collapsed {
+    flex: 0 0 5%;
+    overflow-x: hidden;
+  }
+}
+
+@media (min-width: 475px) and (max-width: 576px) {
+  .sidebar_collapsed {
+    flex: 0 0 9%;
+    overflow-x: hidden;
+    height: 100%;
+    position: fixed;
+  }
+
+  .content_box {
+    padding-left: 14% !important;
+    width: 100%;
+  }
+}
+
+@media (max-width: 475px) {
+  .sidebar_collapsed {
+    flex: 0 0 20%;
+    height: 100%;
+    position: fixed;
+  }
+
+  .content_box {
+    padding-left: 20% !important;
+    width: 100%;
+  }
+}
+
+.sidebar_collapsed .sidebar_nav_label,
+.sidebar_collapsed .sidebar_auth_element_label {
+  display: none !important ;
+}
+
+/* navbar styles */
+
+@media (min-width: 576px) {
+  .navbar_box {
+    background-color: #fff;
+    height: 10%;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar_box {
+    z-index: 100;
+    background-color: #fff;
+    height: 10%;
+    width: 100%;
+  }
+
+  .content_box_event {
+    overflow-y: hidden;
+  }
+}
+
+@media (min-width: 1200px) {
+  .searchbar_box {
+    width: 30%;
+  }
+}
+
+.event_filter_button:focus,
+.event_filter_button:active,
+.event_filter_button {
+  border: none;
+}
+
+.searchbar_box_events {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (min-width: 992px) {
+  .searchbar_box {
+    width: 30%;
+  }
+
+  .searchbar_events {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 992px) {
+  .searchbar_box {
+    width: 50%;
+  }
+
+  .searchbar_events {
+    width: 84%;
+  }
+
+  .event_filter_button {
+    width: 15%;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .searchbar_box {
+    width: 50%;
+  }
+
+  .searchbar_events {
+    width: 84%;
+  }
+
+  .event_filter_button {
+    width: 15%;
+  }
+}
+
+@media (max-width: 576px) {
+  .searchbar_box {
+    width: 60%;
+  }
+
+  .searchbar_events {
+    width: 79%;
+  }
+
+  .event_filter_button {
+    width: 20%;
+  }
+
+  .user_icons svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .sidebar_toggler {
+    padding: 0.6rem;
+    background-color: #f5f7ff;
+    border-radius: 8px;
+  }
+
+  .sidebar_offcanvas_toggler {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar_offcanvas_toggler {
+    padding: 0.6rem;
+    background-color: #f5f7ff;
+    border-radius: 8px;
+  }
+
+  .sidebar_toggler {
+    display: none;
+  }
+
+  .offcanvas {
+    height: 100%;
+    border-top-right-radius: 2rem;
+    transition: none;
+  }
+
+  .fade {
+    transition: none;
+  }
+
+  .offcanvas-backdrop.show {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    background: rgba(68, 71, 144, 0.39);
+    backdrop-filter: blur(5px);
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .offcanvas {
+    width: 40%;
+  }
+}
+
+@media (min-width: 425px) and (max-width: 576px) {
+  .offcanvas {
+    width: 50%;
+  }
+}
+
+@media (max-width: 425px) {
+  .offcanvas {
+    width: 60%;
+  }
+}
+
+/* search bar styles */
+
+.input-group-text {
+  background: #f5f7ff !important;
+}
+
+.form-control::placeholder {
+  color: rgba(31, 35, 73, 0.35);
+  /* background: #f5f7ff !important; */
+}
+
+.form-control:focus {
+  border-color: #dee2e6 !important;
+  box-shadow: none;
+}
+
+.user_icon {
+  border-radius: 106px;
+  padding: 0.3rem;
+  background: #65c9ce23;
+  cursor: pointer;
+}
+
+/* content styles */
+
+.content_box {
+  background-color: #fff;
+}
+
+@media (min-width: 576px) {
+  .dashboard_content {
+    border-top-left-radius: 2rem;
+    background-color: #f2f5ff;
+    height: 90%;
+  }
+}
+
+@media (max-width: 576px) {
+  .dashboard_content {
+    border-top-left-radius: 2rem;
+    background-color: #f2f5ff;
+    height: 100%;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Define styles for the dropdown container */
+.dropdown {
+  position: relative;
+  /* display: inline-block; */
+  
+}
+
+/* Style for the dropdown indicator (arrow or icon) */
+.dropdown-toggle {
+  cursor: pointer;
+  color: #f2f2f2;
+  padding-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+}
+
+/* Define styles for the dropdown menu (initially hidden) */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0.2rem;
+  top: 1.3rem;
+  background-color: #fff; 
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* Style the dropdown items */
+.dropdown-item {
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  color: #333; 
+  cursor: pointer;
+}
+
+/* Change background color on hover */
+.dropdown-item {
+  background-color: #f2f2f2; /* Hover background color */
+}
+
+/* Show the dropdown menu when the parent .dropdown is hovered or clicked */
+.dropdown .dropdown-menu {
+  display: block;
+}

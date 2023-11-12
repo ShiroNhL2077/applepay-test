@@ -1,0 +1,20 @@
+/* The message box is shown when the user clicks on the password field */
+#message {
+    color: #000;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    
+}
+
+#message p {
+    padding: 0px 10px;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+/* Add a green text color and a checkmark when the requirements are right */
+.valid {
+    color: #000;
+}
+

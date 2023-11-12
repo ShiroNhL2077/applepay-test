@@ -1,0 +1,55 @@
+.stripe_pay_btn {
+  padding: 0.5rem 6.5rem;
+  border-radius: 80px;
+  border: 1px solid #fff;
+  background-color: #64c3c5;
+  color: #fff;
+  font-size: 1.2rem;
+}
+.stripe_pay_btn:hover,
+.stripe_pay_btn:focus {
+  border: 1px solid #64c3c5;
+  background-color: #fff;
+  color: #64c3c5;
+}
+
+._card_details ._input .input-group-text,
+._card_details ._input .form-control {
+  border-radius: 80px;
+  border: 1px solid #bdcaf7;
+  color: #bdcaf7;
+}
+
+._card_details ._input .input-group-text {
+  border-left: none !important;
+  background: #fff !important;
+}
+
+._card_details ._input._card_number .form-control {
+  border-right: none !important;
+  border-radius: 80px 0 0 80px;
+}
+
+._card_details ._input .form-control::placeholder {
+  color: #444790;
+  opacity: 0.4;
+}
+
+.StripeElement {
+  padding: 10px;
+  border: 1px solid #bdcaf7;
+  border-radius: 80px;
+}
+
+.card_input {
+  color: #bdcaf7 !important;
+}
+
+.card_zip_input {
+  font-size: 16px !important;
+}
+
+.card_zip_input input {
+  padding: 7px;
+  font-size: 16px !important;
+}
