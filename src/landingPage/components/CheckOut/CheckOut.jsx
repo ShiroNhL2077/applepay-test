@@ -18,6 +18,18 @@ export const stripePromise = loadStripe(
 export default function CheckOut() {
   const navigate = useNavigate();
 
+  const [isAppleProduct, setIsAppleProduct] = useState(false);
+
+  useEffect(() => {
+    const detectAppleProduct = () => {
+      const userAgent = window.navigator.userAgent;
+      const isApple = /Mac|iPhone|iPod|iPad/.test(userAgent);
+      setIsAppleProduct(isApple);
+    };
+
+    detectAppleProduct();
+  }, []);
+
   const [btnClicked, setBtnClicked] = useState(false);
   const [btnDisabled, setBtnDisabled] = useState(false);
 
@@ -542,6 +554,9 @@ export default function CheckOut() {
                   checked={selectedMeth === "applepay"}
                   onClick={() => {
                     createPaymentIntent();
+                    if (!isAppleProduct) {
+                      toast.error("You need an apple device to use this");
+                    }
                   }}
                 />
                 <label
@@ -582,6 +597,7 @@ export default function CheckOut() {
               </svg>
             </div>
             {selectedMeth === "applepay" &&
+            isAppleProduct &&
             (userLogged || (validFirstName && validLastName && validEmail))
               ? stripePromise &&
                 cliSecret && (
