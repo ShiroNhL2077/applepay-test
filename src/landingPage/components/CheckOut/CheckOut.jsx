@@ -153,7 +153,10 @@ export default function CheckOut() {
 
   const optionsApple = {
     appearance,
-    clientSecret: cliSecret,
+    // clientSecret: cliSecret,
+    mode: "payment",
+    amount: 1999,
+    currency: "eur",
   };
 
   const getTotalPrice = (items) => {
