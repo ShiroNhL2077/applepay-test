@@ -157,7 +157,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
         options={{
           wallets: {
             applePay: "always",
-            googlePay: "never",
+            googlePay: "always",
           },
         }}
         onClick={() => {
