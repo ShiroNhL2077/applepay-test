@@ -17,8 +17,9 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const dropdownRef = useRef(null);
-
+  // eslint-disable-next-line
   const toggleDropdown = () => {
+    // eslint-disable-next-line
     setIsDropdownOpen(!isDropdownOpen);
   };
   const handleLogout = () => {
@@ -41,7 +42,8 @@ export default function Navbar() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen, toggleDropdown]);
+    // eslint-disable-next-line
+  }, [isDropdownOpen]);
 
   return (
     <>

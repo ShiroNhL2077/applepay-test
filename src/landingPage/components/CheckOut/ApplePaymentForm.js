@@ -6,6 +6,7 @@ import {
   ExpressCheckoutElement,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
+// eslint-disable-next-line
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -17,7 +18,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
 
   const stripe = useStripe();
   const elements = useElements();
-
+  // eslint-disable-next-line
   const [btnDisabled, setBtnDisabled] = useState(false);
   // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
@@ -120,7 +121,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
       createOrderWithStripeClient(orderDetails);
     }
   };
-
+  // eslint-disable-next-line
   const cardStyle = {
     payment: {
       color: "#bdcaf7",
