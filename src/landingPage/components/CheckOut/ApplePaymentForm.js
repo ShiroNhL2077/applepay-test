@@ -51,8 +51,8 @@ const ApplePay = () => {
       if (backendError) {
         return;
       }
-      // eslint-disable-next-line
 
+      // eslint-disable-next-line
       const { error: stripeError, paymentIntent } =
         await stripe.confirmCardPayment(
           clientSecret,
