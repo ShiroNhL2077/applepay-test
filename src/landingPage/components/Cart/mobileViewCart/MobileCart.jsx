@@ -9,8 +9,8 @@ export default function MobileCart({
   formatDateFull,
   formatTimeToAmPm,
 }) {
- 
-  const {initialCartItems, initialCartEvent } = useSelector((state) => state.cart);
+  const { initialCartItems, initialCartEvent, initialTicketsDate } =
+    useSelector((state) => state.cart);
 
   return (
     <div className="mobile-container">
@@ -198,7 +198,10 @@ export default function MobileCart({
                           </clipPath>
                         </defs>
                       </svg>
-                      <p>doors open at {formatTimeToAmPm(initialCartEvent.startTime)}</p>
+                      <p>
+                        doors open at{" "}
+                        {formatTimeToAmPm(initialCartEvent.startTime)}
+                      </p>
                     </div>
                   </div>
                 </div>
