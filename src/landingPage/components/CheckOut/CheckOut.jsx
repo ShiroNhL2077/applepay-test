@@ -175,76 +175,6 @@ export default function CheckOut() {
     }
   };
 
-  // const createOrderWithStripeClient = async () => {
-  //   const token = localStorage.getItem("token");
-  //   const orderDetails = {
-  //     eventId: orderEvent._id,
-  //     items: orderTickets.map(({ _id, orderQty }) => ({
-  //       ticketId: _id,
-  //       quantity: orderQty,
-  //     })),
-  //     participantDetails: {
-  //       firstname: firstName,
-  //       lastname: lastName,
-  //       email: email,
-  //     },
-  //     validityStartDate: orderTicketsDate.id,
-  //     validityEndDate: orderTicketsDate.id,
-  //     validityStartTime: "11:00:00",
-  //     validityEndTime: "20:00:00",
-  //   };
-  //   if (!token && userLogged) {
-  //     console.log("no token");
-  //     toast.error("Authentification error, please logout and login again.");
-  //     return;
-  //   }
-  //   try {
-  //     const response = await axios.post(
-  //       userLogged
-  //         ? `${process.env.REACT_APP_API_URL}orders/stripe/create`
-  //         : `${process.env.REACT_APP_API_URL}orders/stripe/guest/create`,
-  //       orderDetails,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //       }
-  //     );
-
-  //     // Handle the successful response here, e.g., show a success message to the user
-  //     console.log(response);
-  //     console.log(response.data);
-  //     // localStorage.removeItem("cartTickets");
-  //     // localStorage.removeItem("cartEvent");
-  //     // localStorage.removeItem("ticketsDate");
-  //     toast.success("Payment successful");
-  //     setTimeout(() => {
-  //       navigate("/");
-  //     }, 2000);
-  //   } catch (error) {
-  //     // Handle any network or other errors here
-  //     if (error.response) {
-  //       // The request was made, but the server responded with an error status
-  //       console.error(
-  //         `Error response: ${error.response.status} - ${error.response.data}`
-  //       );
-  //       toast.error("An error has occured, please try again.");
-  //       setBtnDisabled(false);
-  //     } else if (error.request) {
-  //       // The request was made, but no response was received
-  //       console.error("No response received from the server");
-  //       toast.error("Server not responding, please try again later.");
-  //       setBtnDisabled(false);
-  //     } else {
-  //       // Something happened in setting up the request that triggered an error
-  //       console.error("Error setting up the request:", error.message);
-  //       toast.error("Something went while sending request, please try again.");
-  //       setBtnDisabled(false);
-  //     }
-  //   }
-  // };
-
   const [cliSecret, setCliSecret] = useState();
 
   const createPaymentIntent = async () => {
@@ -269,6 +199,8 @@ export default function CheckOut() {
     appearance,
     clientSecret: cliSecret,
   };
+
+  console.log(orderEvent);
 
   return (
     <main className="checkout_container">
@@ -780,16 +712,20 @@ export default function CheckOut() {
             <div className="_divider"></div>
           </div>
           <div className="_event_details row px-3">
-            <div className="_img col-5">
+            <div className="_img col-7">
               <img
                 src={orderEvent.banner}
                 alt="event"
-                className="img-fluid"
-                style={{ maxWidth: 150, maxHeight: 100 }}
+                className="img-fluid checkout_event_banner"
+                style={
+                  isAppleProduct && window.innerWidth < 576
+                    ? { maxWidth: 150, maxHeight: 100 }
+                    : {}
+                }
               />
             </div>
-            <div className="_details col-6 text-start">
-              <h3 className="_name">{orderEvent.name}</h3>
+            <div className="_details col-5 text-start">
+              <h5 className="_name">{orderEvent.eventName}</h5>
               <p className="_date">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"

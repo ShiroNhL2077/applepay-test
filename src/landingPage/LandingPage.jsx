@@ -29,6 +29,11 @@ export default function LandingPage() {
   const [cartItems, setCartItems] = useState([]);
   const [isFixed, setIsFixed] = useState(false);
 
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    setWidth(window.innerWidth);
+  }, []);
+
   useEffect(() => {
     const totalQuantity = cartItems.reduce(
       (sum, item) => sum + item.orderQty,
@@ -171,6 +176,13 @@ export default function LandingPage() {
     dispatch(addItemsToCart(itemsWithQuantity, eventData, selectedDate));
     setBtnDisabled(true);
   };
+
+  const slicedEventDates =
+    width > 768
+      ? eventDates.slice(0, 4)
+      : width > 576 && width <= 768
+      ? eventDates.slice(0, 3)
+      : eventDates.slice(0, 2);
 
   if (!eventData) {
     return <p>...</p>;
@@ -413,7 +425,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="inner_media_box mt-5">
-                <h1>Select date and time :</h1>
+                <h1>Select date :</h1>
                 <div className="home_divider_lg"></div>
                 <div className="home_divider_sm"></div>
                 <div className="home_event_dates_box px-4 py-5">
@@ -514,7 +526,7 @@ export default function LandingPage() {
                   </div>
                   <div className="_divider"></div>
                   <div className="_dates mt-3 d-flex">
-                    {eventDates.slice(0, 4).map((dt) => (
+                    {slicedEventDates.map((dt) => (
                       <div
                         className={`_date_box ${
                           selectedDate?.id === dt.id ? "_date_box_selected" : ""

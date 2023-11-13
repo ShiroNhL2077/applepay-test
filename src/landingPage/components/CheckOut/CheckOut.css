@@ -37,9 +37,11 @@
   height: 1px;
   width: 100%;
   background-color: #000;
-  margin-bottom: 3rem;
+  margin-bottom: 1.5rem;
 }
-
+.checkout_event_banner {
+  object-fit: cover;
+}
 /* form styles */
 
 .checkout_container ._profile_details ._form ._input .input-group-text,
@@ -109,7 +111,7 @@
 
 .checkout_container ._order_details ._event_details ._img img {
   height: 100%;
-  object-fit: cover;
+  object-fit: fill;
   border-radius: 1rem;
 }
 

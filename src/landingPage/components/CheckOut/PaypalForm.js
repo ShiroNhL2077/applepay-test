@@ -1,46 +1,40 @@
 import { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import axios from "axios";
 
-const PaypalForm = ({
-  eventId,
-  items,
-  participantDetails,
-  validityStartDate,
-  validityEndDate,
-  validityStartTime,
-  validityEndTime,
-  userLogged,
-}) => {
+const PaypalForm = ({ order, userLogged }) => {
   const [orderStatus, setOrderStatus] = useState(null);
 
   const createOrder = async (data, actions) => {
     // Assume your API returns the order details including currency and totalAmount
     const orderData = {
-      eventId,
-      items,
-      participantDetails,
-      validityStartDate,
-      validityEndDate,
-      validityStartTime,
-      validityEndTime,
+      eventId: order.eventId,
+      items: order.items,
+      participantDetails: order.participantDetails,
+      validityStartDate: order.validityStartDate,
+      validityEndDate: order.validityEndDate,
+      validityStartTime: order.validityStartTime,
+      validityEndTime: order.validityEndTime,
     };
     const token = localStorage.getItem("token");
-
+    console.log(orderData);
     try {
-      const response = await fetch(
+      const response = await axios.post(
         token && userLogged
           ? `${process.env.REACT_APP_API_URL}orders/paypal/create`
-          : `${process.env.REACT_APP_API_URL}orders/paypal/guest/create`,
+          : `${process.env.REACT_APP_API_URL}orders/paypal/create`,
+        orderData,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(orderData),
         }
       );
-      const orderDetails = await response.json();
+      const orderDetails = response.data;
+
+      console.log(orderDetails);
+
       return actions.order.create({
         intent: "CAPTURE",
         purchase_units: [
