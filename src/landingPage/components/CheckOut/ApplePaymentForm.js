@@ -1,168 +1,86 @@
-// Import necessary dependencies
+import React, { useEffect, useState } from "react";
 import {
+  PaymentRequestButtonElement,
   useStripe,
   useElements,
-  PaymentElement,
-  ExpressCheckoutElement,
 } from "@stripe/react-stripe-js";
-import axios from "axios";
-// eslint-disable-next-line
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
-import "./PaymentForm.css";
 
-// Create the CheckoutForm component
-const ApplePaymentForm = ({ order, userLogged }) => {
-  const navigate = useNavigate();
-
+const ApplePay = () => {
   const stripe = useStripe();
   const elements = useElements();
-  // eslint-disable-next-line
-  const [btnDisabled, setBtnDisabled] = useState(false);
-  // eslint-disable-next-line
-  const [btnClicked, setBtnClicked] = useState(false);
+  const [paymentRequest, setPaymentRequest] = useState(null);
 
-  const createOrderWithStripeClient = async () => {
-    const token = localStorage.getItem("token");
-    const orderDetails = {
-      eventId: order.eventId,
-      items: order.items,
-      participantDetails: order.participantDetails,
-      validityStartDate: order.validityStartDate,
-      validityEndDate: order.orderTicketsDate,
-      validityStartTime: "11:00:00",
-      validityEndTime: "20:00:00",
-    };
-    if (!token && userLogged) {
-      console.log("no token");
-      toast.error("Authentification error, please logout and login again.");
+  useEffect(() => {
+    if (!stripe || !elements) {
       return;
     }
-    try {
-      const response = await axios.post(
-        userLogged
-          ? `${process.env.REACT_APP_API_URL}orders/stripe/create`
-          : `${process.env.REACT_APP_API_URL}orders/stripe/guest/create`,
-        orderDetails,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
 
-      // Handle the successful response here, e.g., show a success message to the user
-      console.log(response.data.message);
-      console.log(response.data.order);
-      localStorage.removeItem("cartTickets");
-      localStorage.removeItem("cartEvent");
-      localStorage.removeItem("ticketsDate");
-      toast.success("Payment successful");
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    } catch (error) {
-      // Handle any network or other errors here
-      if (error.response) {
-        // The request was made, but the server responded with an error status
-        console.error(
-          `Error response: ${error.response.status} - ${error.response.data}`
-        );
-        toast.error("An error has occured, please try again.");
-        setBtnDisabled(false);
-      } else if (error.request) {
-        // The request was made, but no response was received
-        console.error("No response received from the server");
-        toast.error("Server not responding, please try again later.");
-        setBtnDisabled(false);
-      } else {
-        // Something happened in setting up the request that triggered an error
-        console.error("Error setting up the request:", error.message);
-        toast.error("Something went while sending request, please try again.");
-        setBtnDisabled(false);
-      }
-    }
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setBtnDisabled(true);
-    setBtnClicked(true);
-
-    const paymentElement = elements.getElement(PaymentElement);
-
-    const { paymentMethod, error } = await stripe.createPaymentMethod({
-      type: "payment",
-      payment_method: {
-        payment_method: paymentElement,
+    const pr = stripe.paymentRequest({
+      country: "US",
+      currency: "usd",
+      total: {
+        label: "Demo total",
+        amount: 1999,
       },
+      requestPayerName: true,
+      requestPayerEmail: true,
     });
 
-    if (error) {
-      console.error(error);
-      toast.error(
-        "An error has occurred, please verify your payment details and try again."
-      );
-      setBtnDisabled(false);
-    } else {
-      const orderDetails = {
-        eventId: order.eventId,
-        items: order.items,
-        participantDetails: order.participantDetails,
-        validityStartDate: order.validityStartDate,
-        validityEndDate: order.orderTicketsDate,
-        validityStartTime: "11:00:00",
-        validityEndTime: "20:00:00",
-        paymentMethod: paymentMethod.id,
-      };
-      // Use paymentMethod.id to handle the payment on the server
-      createOrderWithStripeClient(orderDetails);
-    }
-  };
-  // eslint-disable-next-line
-  // const cardStyle = {
-  //   payment: {
-  //     color: "#bdcaf7",
-  //     fontFamily: '"TT Commons", sans-serif',
-  //     fontSmoothing: "antialiased",
-  //     fontSize: "16px",
-  //     "::placeholder": {
-  //       color: "#aab7c4",
-  //     },
-  //   },
-  //   invalid: {
-  //     color: "#bdcaf7",
-  //     iconColor: "#bdcaf7",
-  //   },
-  // };
+    // Check the availability of the Payment Request API.
+    pr.canMakePayment().then((result) => {
+      if (result) {
+        setPaymentRequest(pr);
+      }
+    });
+
+    pr.on("paymentmethod", async (e) => {
+      const { error: backendError, clientSecret } = await fetch(
+        "/create-payment-intent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            paymentMethodType: "card",
+            currency: "usd",
+          }),
+        }
+      ).then((r) => r.json());
+
+      if (backendError) {
+        return;
+      }
+
+      const { error: stripeError, paymentIntent } =
+        await stripe.confirmCardPayment(
+          clientSecret,
+          {
+            payment_method: e.paymentMethod.id,
+          },
+          { handleActions: false }
+        );
+
+      if (stripeError) {
+        // Show error to your customer (e.g., insufficient funds)
+        return;
+      }
+
+      // Show a success message to your customer
+      // There's a risk of the customer closing the window before callback
+      // execution. Set up a webhook or plugin to listen for the
+      // payment_intent.succeeded event that handles any business critical
+      // post-payment actions.
+    });
+  }, [stripe, elements]);
 
   return (
-    <form className="mt-3 _card_details" onSubmit={handleSubmit}>
-      <ToastContainer
-        position="top-right"
-        autoClose={2000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <ExpressCheckoutElement
-        className="mb-4 card_input"
-        options={{
-          wallets: {
-            applePay: "always",
-            googlePay: "always",
-          },
-        }}
-      />
-    </form>
+    <>
+      {paymentRequest && (
+        <PaymentRequestButtonElement options={{ paymentRequest }} />
+      )}
+    </>
   );
 };
 
-export default ApplePaymentForm;
+export default ApplePay;
