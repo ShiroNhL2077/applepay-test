@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import "./LandingPage.css";
 import { useLocation } from "react-router-dom"; // Import useLocation from react-router-dom
 import { toast, ToastContainer } from "react-toastify";
@@ -23,25 +23,26 @@ export default function LandingPage() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const message = queryParams.get("message");
+  const navbarHeight = 95;
 
   const [eventData, setEventData] = useState({});
   const [cartItems, setCartItems] = useState([]);
   const [isFixed, setIsFixed] = useState(false);
-  const elementRef = useRef();
-  const [width, setWidth] = useState(window.innerWidth);
-  useEffect(() => {
-    setWidth(window.innerWidth);
-  }, []);
 
   useEffect(() => {
-    const element = elementRef.current;
-    const elementPosition = element
-      ? // element.getBoundingClientRect().top + window.scrollY
-        element + window.scrollY
-      : 0;
+    const totalQuantity = cartItems.reduce(
+      (sum, item) => sum + item.orderQty,
+      0
+    );
+    setBtnDisabled(totalQuantity === 0);
+  }, [cartItems]);
 
+  useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY >= elementPosition) {
+      const boxRight = document.querySelector(".inner_box");
+      const boxRightPosition = boxRight.getBoundingClientRect().top;
+
+      if (boxRightPosition - navbarHeight <= 0) {
         setIsFixed(true);
       } else {
         setIsFixed(false);
@@ -56,15 +57,13 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    // Make an Axios GET request to fetch the events
     axios
       .get(`${process.env.REACT_APP_API_URL}events/`)
       .then((response) => {
-        // Update the state with the fetched events
         setEventData(response.data[0]);
         const newTicketsArray = response.data[0].tickets.map((ticket) => ({
           ...ticket,
-          orderQty: 1,
+          orderQty: 0,
         }));
         setCartItems(newTicketsArray);
       })
@@ -79,13 +78,13 @@ export default function LandingPage() {
 
   const [btnDisabled, setBtnDisabled] = useState(false);
 
-  useEffect(() => {
-    const tickets = JSON.parse(localStorage.getItem("cartTickets"));
-    const event = JSON.parse(localStorage.getItem("cartEvent"));
-    if (tickets || event) {
-      setBtnDisabled(true);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const tickets = JSON.parse(localStorage.getItem("cartTickets"));
+  //   const event = JSON.parse(localStorage.getItem("cartEvent"));
+  //   if (tickets || event) {
+  //     setBtnDisabled(true);
+  //   }
+  // }, []);
 
   const [eventDates, setEventDates] = useState(eventInitDates);
 
@@ -123,18 +122,12 @@ export default function LandingPage() {
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
   const handleIncrement = (index) => {
-    if (btnDisabled) {
-      return;
-    }
     const updatedCart = [...cartItems];
     updatedCart[index].orderQty += 1;
     setCartItems(updatedCart);
   };
 
   const handleDecrement = (index) => {
-    if (btnDisabled) {
-      return;
-    }
     if (cartItems[index].orderQty > 0) {
       const updatedCart = [...cartItems];
       updatedCart[index].orderQty -= 1;
@@ -143,7 +136,6 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    // Check if a message is present in the query parameters
     if (message) {
       setShowToast(true);
     }
@@ -151,11 +143,9 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (showToast) {
-      // Determine the toast style (success or error)
       const toastStyle =
         message === "Email verification failed." ? "error" : "success";
 
-      // Display the message as a toast notification using a single toast
       toast[toastStyle](message, {
         position: "top-right",
         autoClose: 2000,
@@ -176,15 +166,11 @@ export default function LandingPage() {
       toast.error("Please select a date");
       return;
     }
-    dispatch(addItemsToCart(cartItems, eventData, selectedDate));
+    const itemsWithQuantity = cartItems.filter((item) => item.orderQty > 0);
+
+    dispatch(addItemsToCart(itemsWithQuantity, eventData, selectedDate));
     setBtnDisabled(true);
   };
-  const slicedEventDates =
-    width > 768
-      ? eventDates.slice(0, 4)
-      : width > 576 && width <= 768
-      ? eventDates.slice(0, 3)
-      : eventDates.slice(0, 2);
 
   if (!eventData) {
     return <p>...</p>;
@@ -207,7 +193,7 @@ export default function LandingPage() {
         />
         <div className="hero">
           <div className="hero_inner_box">
-            <img src={eventData.banner} alt="event banner" />
+            <img src={eventData.banner} alt="event" />
           </div>
         </div>
         <div className="content">
@@ -427,7 +413,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="inner_media_box mt-5">
-                <h1>Select date :</h1>
+                <h1>Select date and time :</h1>
                 <div className="home_divider_lg"></div>
                 <div className="home_divider_sm"></div>
                 <div className="home_event_dates_box px-4 py-5">
@@ -528,7 +514,7 @@ export default function LandingPage() {
                   </div>
                   <div className="_divider"></div>
                   <div className="_dates mt-3 d-flex">
-                    {slicedEventDates.map((dt) => (
+                    {eventDates.slice(0, 4).map((dt) => (
                       <div
                         className={`_date_box ${
                           selectedDate?.id === dt.id ? "_date_box_selected" : ""
@@ -707,8 +693,8 @@ export default function LandingPage() {
                     height="450"
                     allowfullscreen=""
                     loading="lazy"
+                    title="location"
                     referrerpolicy="no-referrer-when-downgrade"
-                    title="event location"
                   ></iframe>
                 </div>
               </div>
@@ -719,7 +705,7 @@ export default function LandingPage() {
                 <Accordian data={eventData.faqs} />
               </div>
             </div>
-            <div className={isFixed ? "pFixed" : "right_box"} ref={elementRef}>
+            {/* <div className={isFixed ? "pFixed" : "right_box"}>
               <div className="header_title">
                 <h1>tickets</h1>
               </div>
@@ -732,7 +718,6 @@ export default function LandingPage() {
                       <button
                         id="decrement"
                         onClick={() => handleDecrement(index)}
-                        // eslint-disable-next-line
                         disabled={item.orderQty == 1}
                       >
                         -
@@ -795,6 +780,127 @@ export default function LandingPage() {
                 </>
                 <button className="btn validate_btn">Validate My Order</button>
               </div>
+            </div> */}
+            <div className="right-side">
+              <div className={`box_right ${isFixed ? "pFixed" : ""}`}>
+                <div className="header_title">
+                  <h1>tickets</h1>
+                </div>
+                <div className="header-date">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M8 1C8.55229 1 9 1.44772 9 2V3H15V2C15 1.44772 15.4477 1 16 1C16.5523 1 17 1.44772 17 2V3.00003C17.4591 3.00031 17.8592 3.00313 18.1949 3.03057C18.5902 3.06289 18.9831 3.13424 19.3614 3.32698C19.9248 3.61405 20.3851 4.07224 20.6732 4.63781C20.8659 5.016 20.9372 5.40906 20.9695 5.80396C21 6.17815 21 6.6323 21 7.15839V16.8421C21 17.3682 21 17.8221 20.9695 18.1962C20.9372 18.591 20.8659 18.9838 20.6732 19.3619C20.3854 19.9269 19.9254 20.3859 19.3614 20.6732C18.9833 20.8659 18.5905 20.9372 18.1957 20.9695C17.8217 21 17.3677 21 16.8416 21H7.15839C6.6323 21 6.17815 21 5.80397 20.9695C5.40906 20.9372 5.016 20.8659 4.63781 20.6732C4.07276 20.3853 3.61431 19.9258 3.32698 19.3619C3.13421 18.9835 3.06288 18.5904 3.03057 18.1951C2.99997 17.8206 2.99998 17.3659 3 16.8388V7.16168C2.99998 6.6345 2.99997 6.17965 3.03057 5.80498C3.06286 5.40962 3.13416 5.01624 3.32698 4.63781C3.6146 4.07332 4.07332 3.6146 4.63781 3.32698C5.01625 3.13416 5.40962 3.06286 5.80499 3.03057C6.14079 3.00314 6.54102 3.00031 7 3.00003V2C7 1.44772 7.44772 1 8 1ZM5.9678 5.02393C5.69595 5.04613 5.59517 5.08383 5.54579 5.10899C5.35763 5.20487 5.20487 5.35763 5.109 5.54579C5.08383 5.59517 5.04614 5.69595 5.02393 5.9678C5.00358 6.21702 5.00052 6.53498 5.00007 7H18.9999C18.9995 6.53429 18.9965 6.21614 18.9761 5.96686C18.9539 5.69554 18.9163 5.595 18.8912 5.54579C18.7959 5.35871 18.6427 5.20542 18.4534 5.10899C18.4039 5.08374 18.3032 5.0461 18.0319 5.02392C17.7488 5.00078 17.3768 5 16.8002 5H7.2002C6.62365 5 6.25126 5.00078 5.9678 5.02393ZM19 9H5V16.8002C5 17.3768 5.00078 17.7489 5.02393 18.0322C5.04612 18.3037 5.08378 18.4044 5.109 18.4539C5.20516 18.6426 5.35819 18.7956 5.54579 18.8912C5.595 18.9163 5.69554 18.9539 5.96686 18.9761C6.2498 18.9992 6.62146 19 7.19691 19H16.8031C17.3786 19 17.75 18.9992 18.0327 18.9761C18.3036 18.9539 18.4041 18.9164 18.4534 18.8912C18.6421 18.7951 18.7956 18.6415 18.8912 18.4539C18.9164 18.4046 18.954 18.3041 18.9761 18.0332C18.9992 17.7505 19 17.379 19 16.8036V9ZM7 12C7 11.4477 7.44772 11 8 11H8.002C8.27127 11 8.52916 11.1086 8.71732 11.3012C8.90548 11.4938 9.00802 11.7542 9.00173 12.0234L9.00168 12.0254C8.99548 12.2906 8.88414 12.5425 8.69215 12.7256C8.50016 12.9087 8.24327 13.0081 7.97804 13.0017H7.97608C7.43327 12.9887 7 12.5449 7 12.002V12ZM11 12C11 11.4477 11.4477 11 12 11H12.002C12.2713 11 12.5292 11.1086 12.7173 11.3012C12.9055 11.4938 13.008 11.7542 13.0017 12.0234V12.0254C12.9955 12.2906 12.8841 12.5425 12.6921 12.7256C12.5002 12.9087 12.2433 13.0081 11.978 13.0017H11.9761C11.4333 12.9887 11 12.5449 11 12.002V12ZM15 12C15 11.4477 15.4477 11 16 11H16.002C16.5542 11 17.002 11.4477 17.002 12V12.002C17.002 12.2714 16.8933 12.5293 16.7006 12.7175C16.5078 12.9057 16.2473 13.0082 15.978 13.0017H15.9761C15.4333 12.9887 15 12.5449 15 12.002V12ZM7 16C7 15.4477 7.44772 15 8 15H8.002C8.27127 15 8.52916 15.1086 8.71732 15.3012C8.90548 15.4938 9.00802 15.7542 9.00173 16.0234L9.00168 16.0254C8.99548 16.2906 8.88414 16.5425 8.69215 16.7256C8.50016 16.9087 8.24327 17.0081 7.97804 17.0017H7.97608C7.43327 16.9887 7 16.5449 7 16.002V16ZM11 16C11 15.4477 11.4477 15 12 15H12.002C12.2713 15 12.5292 15.1086 12.7173 15.3012C12.9055 15.4938 13.008 15.7542 13.0017 16.0234V16.0254C12.9955 16.2906 12.8841 16.5425 12.6921 16.7256C12.5002 16.9087 12.2433 17.0081 11.978 17.0017H11.9761C11.4333 16.9887 11 16.5449 11 16.002V16ZM15 16C15 15.4477 15.4477 15 16 15H16.002C16.2713 15 16.5292 15.1086 16.7173 15.3012C16.9055 15.4938 17.008 15.7542 17.0017 16.0234V16.0254C16.9955 16.2906 16.8841 16.5425 16.6921 16.7256C16.5002 16.9087 16.2433 17.0081 15.978 17.0017H15.9761C15.4333 16.9887 15 16.5449 15 16.002V16Z"
+                      fill="#57BABC"
+                    />
+                  </svg>
+                  <span>
+                    {selectedDate ? (
+                      <>
+                        {selectedDate?.weekDay}, {selectedDate?.month}{" "}
+                        {selectedDate?.day} / 11 : 8 pm
+                      </>
+                    ) : (
+                      ""
+                    )}
+                  </span>
+                </div>
+                <div className="box_body">
+                  {cartItems.map((item, index) => (
+                    <div className="b_one" key={index}>
+                      <p className="col text-start">{item.name}:</p>
+                      <p id="price" className="col">
+                        {item.price.toFixed(1)} €
+                      </p>
+                      <div class="col input-wrapper">
+                        <button
+                          onClick={() => handleDecrement(index)}
+                          // eslint-disable-next-line
+                          disabled={item.orderQty == 0}
+                        >
+                          -
+                        </button>
+                        <span>{item.orderQty}</span>
+                        <button onClick={() => handleIncrement(index)}>
+                          +
+                        </button>
+                        {/* <span className="input-wrapper">
+                      <button
+                        id="decrement"
+                        onClick={() => handleDecrement(index)}
+                        disabled={item.orderQty == 1}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value={item.orderQty}
+                        id="quantity"
+                      />
+                      <button
+                        id="increment"
+                        onClick={() => handleIncrement(index)}
+                      >
+                        +
+                      </button>
+                      </span> */}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="box_footer">
+                  <div className="total_box">
+                    <p>total :</p>
+                    <p id="t_price">{getTotalPrice(cartItems)} €</p>
+                  </div>
+                  <>
+                    <button
+                      className="btn cart_btn"
+                      onClick={handleAddToCart}
+                      disabled={btnDisabled}
+                    >
+                      <svg
+                        width="21"
+                        height="21"
+                        viewBox="0 0 21 21"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g clip-path="url(#clip0_298_6660)">
+                          <path
+                            d="M19.9185 4.02741C19.7346 3.79423 19.5 3.6059 19.2326 3.47664C18.9653 3.34738 18.672 3.28057 18.375 3.28125H5.07478L4.57669 1.16222C4.5428 1.01817 4.46122 0.889797 4.34519 0.797949C4.22915 0.7061 4.08548 0.656165 3.9375 0.65625H1.3125C1.13845 0.65625 0.971532 0.725391 0.848461 0.848461C0.72539 0.971532 0.65625 1.13845 0.65625 1.3125C0.65625 1.48655 0.72539 1.65347 0.848461 1.77654C0.971532 1.89961 1.13845 1.96875 1.3125 1.96875H3.41775L5.73759 11.8296C5.23168 11.871 4.76146 12.1067 4.42558 12.4873C4.0897 12.8679 3.91427 13.3638 3.93608 13.8709C3.9579 14.378 4.17527 14.857 4.54259 15.2074C4.90992 15.5577 5.39865 15.7522 5.90625 15.75H17.0625C17.2365 15.75 17.4035 15.6809 17.5265 15.5578C17.6496 15.4347 17.7188 15.2678 17.7188 15.0938C17.7188 14.9197 17.6496 14.7528 17.5265 14.6297C17.4035 14.5066 17.2365 14.4375 17.0625 14.4375H5.90625C5.7322 14.4375 5.56528 14.3684 5.44221 14.2453C5.31914 14.1222 5.25 13.9553 5.25 13.7812C5.25 13.6072 5.31914 13.4403 5.44221 13.3172C5.56528 13.1941 5.7322 13.125 5.90625 13.125H16.9851C17.4291 13.1261 17.8604 12.9766 18.2085 12.7009C18.5565 12.4252 18.8008 12.0396 18.9013 11.6071L20.2919 5.70084C20.3606 5.41185 20.3626 5.11103 20.2979 4.82112C20.2333 4.53121 20.1035 4.2598 19.9185 4.02741Z"
+                            fill="white"
+                          />
+                          <path
+                            d="M15.0938 20.3438C16.1811 20.3438 17.0625 19.4623 17.0625 18.375C17.0625 17.2877 16.1811 16.4062 15.0938 16.4062C14.0064 16.4062 13.125 17.2877 13.125 18.375C13.125 19.4623 14.0064 20.3438 15.0938 20.3438Z"
+                            fill="white"
+                          />
+                          <path
+                            d="M7.875 20.3438C8.96231 20.3438 9.84375 19.4623 9.84375 18.375C9.84375 17.2877 8.96231 16.4062 7.875 16.4062C6.78769 16.4062 5.90625 17.2877 5.90625 18.375C5.90625 19.4623 6.78769 20.3438 7.875 20.3438Z"
+                            fill="white"
+                          />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_298_6660">
+                            <rect width="21" height="21" fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                      Add To Cart
+                    </button>
+                  </>
+                  <button className="btn validate_btn">
+                    Validate My Order
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -811,6 +917,8 @@ export default function LandingPage() {
               handleDecrement={handleDecrement}
               getTotalPrice={getTotalPrice}
               setBtnDisabled={setBtnDisabled}
+              btnDisabled={btnDisabled}
+              selectedDate={selectedDate}
             />
           </div>
         </div>

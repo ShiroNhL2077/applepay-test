@@ -6,14 +6,11 @@ import {
 } from "../constants/cartConstants";
 
 const initialCartEvent = JSON.parse(localStorage.getItem("cartEvent")) || {};
-const initialTicketsDate =
-  JSON.parse(localStorage.getItem("ticketsDate")) || {};
 const initialCartItems = JSON.parse(localStorage.getItem("cartTickets")) || [];
 
 const initialState = {
   initialCartEvent,
   initialCartItems,
-  initialTicketsDate,
 };
 
 export const cartReducer = (state = initialState, { type, payload }) => {
@@ -48,7 +45,6 @@ export const cartReducer = (state = initialState, { type, payload }) => {
         ...state,
         initialCartItems: updatedCartItems,
         initialCartEvent: updatedCartEvent,
-        initialTicketsDate,
       };
     case INCREMENT_CART_ITEM:
       const incrementedCart = [...state.initialCartItems];

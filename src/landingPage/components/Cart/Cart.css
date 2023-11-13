@@ -50,7 +50,7 @@
 }
 .cart-tbl-container {
   max-height: 260px;
-  /* overflow-y: auto; */
+  overflow-y: auto;
   width: 100%;
   border-radius: 21.5px 21.5px 0 21.5px;
   margin-top: 15px;
@@ -85,7 +85,7 @@
 .event-date > p {
   color: #1f2349;
   font-family: TT Commons;
-  font-size: 10px;
+  font-size: 13px;
   font-style: normal;
   font-weight: 300;
   line-height: normal;
@@ -106,10 +106,12 @@
 .cart-input-wrapper {
   width: 100%;
   height: 40px;
+  text-align: center;
 }
 .cart-input-wrapper * {
   border: none;
   width: 30px;
+  text-align: center;
 }
 .cart-input-wrapper button {
   cursor: pointer;
@@ -194,7 +196,13 @@
   text-transform: capitalize;
   text-align: center;
 }
-
+.pyt-icons {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
 #checkout_btn {
   width: calc(100% / 2);
   margin-left: auto;
@@ -234,7 +242,28 @@
   ##Device = Tablets, Ipads (portrait)
   ##Screen = B/w 768px to 1024px
 */
-
+@media (min-width: 320px) and (max-width: 425px) {
+  .cart_btns {
+    flex-direction: column;
+    align-items: center;
+  }
+  .validation_btns {
+    width: 100%;
+  }
+  .cart_pyt {
+    width: 100%;
+  }
+  #checkout_btn {
+    width: 100%;
+  }
+  .mobile-cart {
+    display: block;
+    width: 100%;
+  }
+  .cart-tbl-container {
+    display: none;
+  }
+}
 @media (min-width: 768px) and (max-width: 1024px) {
   .cart_container {
     padding: 1rem 2% 1rem 2%;
@@ -295,26 +324,4 @@
   }
 }
 
-@media (min-width: 320px) and (max-width: 425px) {
-  .cart_btns {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-  .validation_btns {
-    width: 100%;
-  }
-  .cart_pyt {
-    width: 100%;
-  }
-  #checkout_btn {
-    width: 100%;
-  }
-  .mobile-cart {
-    display: block;
-    width: 100%;
-  }
-  .tabler-display {
-    display: none;
-  }
-}
+

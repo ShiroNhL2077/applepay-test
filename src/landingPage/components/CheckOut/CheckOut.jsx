@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { Form, InputGroup, Modal } from "react-bootstrap";
+import { Form, InputGroup } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import "./CheckOut.css";
 import PaymentForm from "./PaymentForm";
@@ -10,6 +10,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { toast, ToastContainer } from "react-toastify";
 import ApplePaymentForm from "./ApplePaymentForm";
+import PaypalForm from "./PaypalForm";
 
 export const stripePromise = loadStripe(
   process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
@@ -17,7 +18,7 @@ export const stripePromise = loadStripe(
 
 export default function CheckOut() {
   const navigate = useNavigate();
-  // eslint-disable-next-line
+
   const [isAppleProduct, setIsAppleProduct] = useState(false);
 
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function CheckOut() {
 
   const [selectedMeth, setSelectedMeth] = useState("");
 
-  const [payModalShow, setPayModalShow] = useState(false);
+  // const [payModalShow, setPayModalShow] = useState(false);
 
   const appearance = {
     theme: "stripe",
@@ -524,44 +525,70 @@ export default function CheckOut() {
                 )
               : null}
           </div>
-          <div className="_paymeth_box _paypal mb-3 d-flex justify-content-between align-items-center">
-            <div className="_radio_btn form-check text-start">
-              <input
-                className="form-check-input"
-                type="radio"
-                name="flexRadioDefault"
-                id="paypalRadio"
-                value={"paypal"}
-                onChange={handleRadioChange}
-                checked={selectedMeth === "paypal"}
-              />
-              <label
-                className={
-                  selectedMeth === "paypal"
-                    ? "form-check-label _selected_meth"
-                    : "form-check-label"
-                }
-                for="paypalRadio"
+          <div className="_paymeth_box _paypal mb-3">
+            <div className=" d-flex justify-content-between align-items-center">
+              <div className="_radio_btn form-check text-start">
+                <input
+                  className="form-check-input"
+                  type="radio"
+                  name="flexRadioDefault"
+                  id="paypalRadio"
+                  value={"paypal"}
+                  onChange={handleRadioChange}
+                  checked={selectedMeth === "paypal"}
+                />
+                <label
+                  className={
+                    selectedMeth === "paypal"
+                      ? "form-check-label _selected_meth"
+                      : "form-check-label"
+                  }
+                  for="paypalRadio"
+                >
+                  Paypal
+                </label>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="33"
+                height="33"
+                viewBox="0 0 33 33"
+                fill="none"
               >
-                Paypal
-              </label>
+                <path
+                  d="M11.2293 19.569C11.3428 18.8574 11.9595 18.3315 12.6875 18.3315H15.7194C21.678 18.3315 26.3413 15.9307 27.7046 8.98631C27.7458 8.78006 27.8098 8.38406 27.8098 8.38406C28.1975 5.81419 27.8077 4.07137 26.4073 2.48944C24.8687 0.746625 22.0844 0 18.5224 0H8.1851C7.45703 0 6.83828 0.525938 6.72278 1.2375L2.41841 28.3202C2.33385 28.8544 2.75047 29.337 3.29497 29.337H9.67635L11.2789 19.2514L11.2293 19.569Z"
+                  fill="#0D47A1"
+                />
+                <path
+                  d="M15.7194 20.1545H13.001L10.9715 32.9998H15.3812C16.0185 32.9998 16.5609 32.5398 16.6599 31.9149L16.7115 31.6426L17.7262 25.2675L17.7922 24.9168C17.8912 24.2919 18.4337 23.832 19.0689 23.832H19.8753C25.0873 23.832 29.1669 21.7323 30.359 15.6583C30.8375 13.2204 30.6065 11.1765 29.4247 9.69971C27.9439 16.5369 23.2187 20.1545 15.7194 20.1545Z"
+                  fill="#0D47A1"
+                />
+              </svg>
             </div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="33"
-              height="33"
-              viewBox="0 0 33 33"
-              fill="none"
-            >
-              <path
-                d="M11.2293 19.569C11.3428 18.8574 11.9595 18.3315 12.6875 18.3315H15.7194C21.678 18.3315 26.3413 15.9307 27.7046 8.98631C27.7458 8.78006 27.8098 8.38406 27.8098 8.38406C28.1975 5.81419 27.8077 4.07137 26.4073 2.48944C24.8687 0.746625 22.0844 0 18.5224 0H8.1851C7.45703 0 6.83828 0.525938 6.72278 1.2375L2.41841 28.3202C2.33385 28.8544 2.75047 29.337 3.29497 29.337H9.67635L11.2789 19.2514L11.2293 19.569Z"
-                fill="#0D47A1"
-              />
-              <path
-                d="M15.7194 20.1545H13.001L10.9715 32.9998H15.3812C16.0185 32.9998 16.5609 32.5398 16.6599 31.9149L16.7115 31.6426L17.7262 25.2675L17.7922 24.9168C17.8912 24.2919 18.4337 23.832 19.0689 23.832H19.8753C25.0873 23.832 29.1669 21.7323 30.359 15.6583C30.8375 13.2204 30.6065 11.1765 29.4247 9.69971C27.9439 16.5369 23.2187 20.1545 15.7194 20.1545Z"
-                fill="#0D47A1"
-              />
-            </svg>
+            {selectedMeth === "paypal" &&
+            (userLogged || (validFirstName && validLastName && validEmail)) ? (
+              <div className="paypay_container mt-3">
+                <PaypalForm
+                  order={{
+                    eventId: orderEvent._id,
+                    items: orderTickets.map(({ _id, orderQty }) => ({
+                      ticketId: _id,
+                      quantity: orderQty,
+                    })),
+                    participantDetails: {
+                      firstname: firstName,
+                      lastname: lastName,
+                      email: email,
+                    },
+                    validityStartDate: orderTicketsDate.id,
+                    validityEndDate: orderTicketsDate.id,
+                    validityStartTime: "11:00:00",
+                    validityEndTime: "20:00:00",
+                  }}
+                  userLogged={userLogged}
+                />
+              </div>
+            ) : null}
           </div>
           <div className="_paymeth_box _klarna mb-3 d-flex justify-content-between align-items-center">
             <div className="_radio_btn form-check text-start">
@@ -696,7 +723,7 @@ export default function CheckOut() {
                 )
               : null}
           </div>
-          {selectedMeth === "" ||
+          {/* {selectedMeth === "" ||
           selectedMeth === "stripe" ||
           selectedMeth === "applepay" ? null : (
             <div className="mt-5 d-flex">
@@ -745,7 +772,7 @@ export default function CheckOut() {
               </Modal.Title>
             </Modal.Header>
             <Modal.Body></Modal.Body>
-          </Modal>
+          </Modal> */}
         </section>
         <section className="col-lg-5 col-xxl-4 _order_details">
           <div className="_header">

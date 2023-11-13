@@ -12,14 +12,17 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin } = useSelector((state) => state.user);
   const { initialCartItems } = useSelector((state) => state.cart);
+  const totalQuantityInCart = initialCartItems?.reduce(
+    (total, item) => total + item?.orderQty,
+    0
+  );
 
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const dropdownRef = useRef(null);
-  // eslint-disable-next-line
+
   const toggleDropdown = () => {
-    // eslint-disable-next-line
     setIsDropdownOpen(!isDropdownOpen);
   };
   const handleLogout = () => {
@@ -179,7 +182,7 @@ export default function Navbar() {
                   />
                 </g>
               </svg>
-              <span className="cart-number">{initialCartItems?.length}</span>
+              <span className="cart-number">{totalQuantityInCart}</span>
               {/* <span className="cart-number">{cartNumber}</span> */}
             </p>
 

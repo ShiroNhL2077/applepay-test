@@ -9,13 +9,13 @@ export default function MobileCart({
   formatDateFull,
   formatTimeToAmPm,
 }) {
-  // eslint-disable-next-line
-  const { initialCartItems, initialCartEvent, initialTicketsDate } =
-    useSelector((state) => state.cart);
+  const { initialCartItems, initialCartEvent } = useSelector(
+    (state) => state.cart
+  );
 
   return (
     <div className="mobile-container">
-      {initialCartItems.map((el, i) => (
+      {initialCartItems?.map((el, i) => (
         <div className="mobile-cart-container" key={i}>
           <div
             className="mobile-delete-icon"
@@ -220,7 +220,7 @@ export default function MobileCart({
               <span className="col-6">quantity</span>
               <div className="event-img-date col">
                 <div className=" w-100 event-name ">
-                  <span class="cart-input-wrapper d-flex justify-content-center align-items-center">
+                  <span class="cart-input-wrapper d-flex justify-content-start align-items-center">
                     <button onClick={() => handleDecrement(i)}>-</button>
                     <input type="number" value={el.orderQty} id="quantity" />
                     <button onClick={() => handleIncrement(i)}>+</button>

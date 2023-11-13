@@ -226,6 +226,10 @@
   justify-content: center;
   gap: 1.3rem;
 }
+.qr-code-box > img {
+  height: 200px;
+  width: 70%;
+}
 .qr-box-ttl > h7 {
   color: #1f2349;
   font-size: 12px;

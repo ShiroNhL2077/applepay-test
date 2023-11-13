@@ -99,6 +99,10 @@
   border-right: none !important;
 }
 
+.signin_modal ._input_group .form-control {
+  text-align: left !important;
+}
+
 .signin_modal .modal-footer {
   border-top: none;
 }

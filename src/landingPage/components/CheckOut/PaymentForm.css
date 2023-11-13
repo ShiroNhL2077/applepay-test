@@ -53,3 +53,7 @@
   padding: 7px;
   font-size: 16px !important;
 }
+
+.card-detail-input .StripeElement .LinkButton {
+  display: none !important;
+}

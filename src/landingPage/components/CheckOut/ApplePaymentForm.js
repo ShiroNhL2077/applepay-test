@@ -4,6 +4,7 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
+import axios from "axios";
 
 const ApplePaymentForm = () => {
   const stripe = useStripe();
@@ -36,41 +37,46 @@ const ApplePaymentForm = () => {
     });
 
     pr.on("paymentmethod", async (e) => {
-      const { error: backendError, clientSecret } = await fetch(
-        `${process.env.REACT_APP_API_URL}orders/stripe/createIntent`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            paymentMethodType: "apple_pay",
-            currency: "usd",
-            // Include any other necessary parameters for Apple Pay
-          }),
-        }
-      ).then((r) => r.json());
-
-      if (backendError) {
-        console.error("Backend error:", backendError.message);
-        return;
-      }
-
-      const { error: stripeError, paymentIntent } =
-        await stripe.confirmCardPayment(
-          clientSecret,
+      try {
+        const body = {
+          amount: 1999,
+        };
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}orders/stripe/createIntent`,
+          body,
           {
-            payment_method: e.paymentMethod.id,
-          },
-          { handleActions: false }
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
-      if (stripeError) {
-        console.error("Stripe error:", stripeError.message);
-        return;
-      }
+        const { error: backendError, clientSecret } = data;
 
-      console.log(`Payment ${paymentIntent.status}: ${paymentIntent.id}`);
+        if (backendError) {
+          console.error("Backend error:", backendError.message);
+          return;
+        }
+
+        const { error: stripeError, paymentIntent } =
+          await stripe.confirmCardPayment(
+            clientSecret,
+            {
+              payment_method: e.paymentMethod.id,
+            },
+            { handleActions: false }
+          );
+
+        if (stripeError) {
+          console.error("Stripe error:", stripeError.message);
+          return;
+        }
+
+        console.log(`Payment ${paymentIntent.status}: ${paymentIntent.id}`);
+      } catch (error) {
+        console.error("Error:", error.message);
+        // Handle the error as needed...
+      }
     });
   }, [stripe, elements]);
 

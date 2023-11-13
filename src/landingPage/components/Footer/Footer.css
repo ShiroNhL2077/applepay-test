@@ -1,5 +1,6 @@
 .footer_container {
   background: rgba(31, 35, 73, 1);
+  z-index: 5;
 }
 .inner_footer_box {
   width: 80%;
