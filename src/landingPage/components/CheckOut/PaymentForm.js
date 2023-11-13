@@ -18,11 +18,10 @@ const PaymentForm = ({ order, userLogged }) => {
 
   const stripe = useStripe();
   const elements = useElements();
-  
-  const [cardZipCode, setCardZipCode] = useState("");
+  // const [cardZipCode, setCardZipCode] = useState("");
 
   const [btnDisabled, setBtnDisabled] = useState(false);
-  
+  // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
 
   const createOrderWithStripeClient = async (oD) => {
@@ -85,9 +84,9 @@ const PaymentForm = ({ order, userLogged }) => {
     setBtnClicked(true);
 
     const cardNumberElement = elements.getElement(CardNumberElement);
-    
+    // eslint-disable-next-line
     const cardExpiryElement = elements.getElement(CardExpiryElement);
-    
+    // eslint-disable-next-line
     const cardCvcElement = elements.getElement(CardCvcElement);
 
     const { paymentMethod, error } = await stripe.createPaymentMethod({
@@ -147,19 +146,19 @@ const PaymentForm = ({ order, userLogged }) => {
         theme="light"
       />
       <div className="row">
-        <div className="">
+        <div className="card-detail-input ">
           <CardNumberElement
             className="mb-4 card_input"
             options={{ style: cardStyle }}
           />
         </div>
-        <div className="col-xl-6">
+        <div className="card-detail-input col-xl-6">
           <CardExpiryElement
             className="mb-4 card_input"
             options={{ style: cardStyle }}
           />
         </div>
-        <div className="col-xl-6">
+        <div className="card-detail-input col-xl-6">
           <CardCvcElement
             className="mb-4 card_input"
             options={{ style: cardStyle }}

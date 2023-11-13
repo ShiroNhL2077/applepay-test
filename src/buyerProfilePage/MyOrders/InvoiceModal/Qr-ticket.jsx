@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import "./InvoiceModal.css";
 import { useSelector } from "react-redux";
 import { formatDateFull } from "../../../utils/formatDateFull";

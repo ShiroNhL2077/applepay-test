@@ -14,7 +14,7 @@ export default function ImageModal({ imageUrl, closeModal, isModalOpen }) {
       >
         <Modal.Header closeButton></Modal.Header>
         <Modal.Body className="d-flex justify-content-center flex-column items-center">
-          <img src={imageUrl} alt='zoomed' />
+          <img src={imageUrl} alt="zoomed" />
         </Modal.Body>
         <Modal.Footer className="d-flex justify-content-center mb-4"></Modal.Footer>
       </Modal>

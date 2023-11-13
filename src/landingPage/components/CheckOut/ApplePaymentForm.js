@@ -19,7 +19,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
   const elements = useElements();
 
   const [btnDisabled, setBtnDisabled] = useState(false);
-  
+  // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
 
   const createOrderWithStripeClient = async (oD) => {
@@ -145,22 +145,12 @@ const ApplePaymentForm = ({ order, userLogged }) => {
       <ExpressCheckoutElement
         className="mb-4 card_input"
         options={{
-          style: cardStyle.payment,
           wallets: {
             applePay: "always",
             googlePay: "never",
           },
         }}
       />
-      <div className="d-flex justify-content-center mt-3">
-        <button
-          type="submit"
-          className="btn stripe_pay_btn"
-          disabled={!stripe || btnDisabled}
-        >
-          Pay
-        </button>
-      </div>
     </form>
   );
 };

@@ -18,20 +18,20 @@ export const stripePromise = loadStripe(
 export default function CheckOut() {
   const navigate = useNavigate();
 
-  const [isAppleProduct, setIsAppleProduct] = useState(false);
+  const [isAppleProduct, setIsAppleProduct] = useState(true);
 
-  useEffect(() => {
-    const detectAppleProduct = () => {
-      const userAgent = window.navigator.userAgent;
-      const isApple = /Mac|iPhone|iPod|iPad/.test(userAgent);
-      setIsAppleProduct(isApple);
-    };
+  // useEffect(() => {
+  //   const detectAppleProduct = () => {
+  //     const userAgent = window.navigator.userAgent;
+  //     const isApple = /Mac|iPhone|iPod|iPad/.test(userAgent);
+  //     setIsAppleProduct(isApple);
+  //   };
 
-    detectAppleProduct();
-  }, []);
+  //   detectAppleProduct();
+  // }, []);
 
   const [btnClicked, setBtnClicked] = useState(false);
-  
+  // eslint-disable-next-line
   const [btnDisabled, setBtnDisabled] = useState(false);
 
   const [firstName, setFirstName] = useState("");
@@ -77,7 +77,7 @@ export default function CheckOut() {
   const onEmailChange = (e) => {
     const eml = e.target.value;
     setEmail(eml);
-    
+    // eslint-disable-next-line
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
     if (emailRegex.test(eml) && eml.length > 0) {
@@ -168,7 +168,7 @@ export default function CheckOut() {
   const handleRadioChange = (event) => {
     setSelectedMeth(event.target.value);
   };
-  
+  // eslint-disable-next-line
   const [payMethDisabled, setPaymethDisabled] = useState(true);
 
   const checkUserInfoFilled = () => {

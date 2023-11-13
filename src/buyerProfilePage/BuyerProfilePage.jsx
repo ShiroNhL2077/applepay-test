@@ -114,7 +114,7 @@ export default function BuyerProfilePage() {
   // const onEmailChange = (e) => {
   //   const eml = e.target.value;
   //   setEmail(eml);
-  //   
+  //   // eslint-disable-next-line
   //   const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
   //   if (emailRegex.test(eml) && eml.length > 0) {
@@ -203,7 +203,7 @@ export default function BuyerProfilePage() {
     }
 
     try {
-      
+      // eslint-disable-next-line
       const response = await axios.put(
         `${process.env.REACT_APP_API_URL}user/update-profile`,
         data,

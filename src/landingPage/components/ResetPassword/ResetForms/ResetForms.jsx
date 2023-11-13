@@ -33,7 +33,7 @@ export default function ResetForms() {
   //   const uppercaseCriteria = /[A-Z]/.test(newPassword); // Contains at least one uppercase letter
   //   const lowercaseCriteria = /[a-z]/.test(newPassword); // Contains at least one lowercase letter
   //   const numberCriteria = /[0-9]/.test(newPassword); // Contains at least one digit
-  //   
+  //   // eslint-disable-next-line
   //   const specialCharCriteria = /[!@#\$%^&*()_+{}[\]:;<>,.?~|/-]/.test(
   //     newPassword
   //   ); // Contains at least one special character
@@ -58,7 +58,7 @@ export default function ResetForms() {
       uppercase: /[A-Z]/.test(pw), // Contains at least one uppercase letter
       lowercase: /[a-z]/.test(pw), // Contains at least one lowercase letter
       number: /[0-9]/.test(pw), // Contains at least one digit
-      
+      // eslint-disable-next-line
       specialChar: /[!@#$%^&*()_+{}\[\]:;<>,.?~\\|/-]/.test(pw), // Contains at least one special character
     };
 

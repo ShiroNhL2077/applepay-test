@@ -41,6 +41,7 @@ export default function Navbar() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+    // eslint-disable-next-line
   }, [isDropdownOpen]);
 
   return (
@@ -177,9 +178,7 @@ export default function Navbar() {
                   />
                 </g>
               </svg>
-              <span className="cart-number">
-                { initialCartItems?.length }
-              </span>
+              <span className="cart-number">{initialCartItems?.length}</span>
               {/* <span className="cart-number">{cartNumber}</span> */}
             </p>
 

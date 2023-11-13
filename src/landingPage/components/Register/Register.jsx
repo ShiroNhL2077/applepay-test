@@ -68,7 +68,7 @@ export default function Register({ show, onHide, changeAuthMode }) {
   const onEmailChange = (e) => {
     const eml = e.target.value;
     setEmail(eml);
-    
+    // eslint-disable-next-line
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
     if (emailRegex.test(eml) && eml.length > 0) {
@@ -123,7 +123,7 @@ export default function Register({ show, onHide, changeAuthMode }) {
       uppercase: /[A-Z]/.test(pw), // Contains at least one uppercase letter
       lowercase: /[a-z]/.test(pw), // Contains at least one lowercase letter
       number: /[0-9]/.test(pw), // Contains at least one digit
-      
+      // eslint-disable-next-line
       specialChar: /[!@#$%^&*()_+{}\[\]:;<>,.?~\\|/-]/.test(pw), // Contains at least one special character
     };
 
