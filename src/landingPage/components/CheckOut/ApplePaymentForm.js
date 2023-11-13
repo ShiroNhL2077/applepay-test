@@ -160,9 +160,6 @@ const ApplePaymentForm = ({ order, userLogged }) => {
             googlePay: "always",
           },
         }}
-        onClick={() => {
-          handleSubmit();
-        }}
       />
     </form>
   );
