@@ -122,21 +122,21 @@ const ApplePaymentForm = ({ order, userLogged }) => {
     }
   };
   // eslint-disable-next-line
-  const cardStyle = {
-    payment: {
-      color: "#bdcaf7",
-      fontFamily: '"TT Commons", sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: "16px",
-      "::placeholder": {
-        color: "#aab7c4",
-      },
-    },
-    invalid: {
-      color: "#bdcaf7",
-      iconColor: "#bdcaf7",
-    },
-  };
+  // const cardStyle = {
+  //   payment: {
+  //     color: "#bdcaf7",
+  //     fontFamily: '"TT Commons", sans-serif',
+  //     fontSmoothing: "antialiased",
+  //     fontSize: "16px",
+  //     "::placeholder": {
+  //       color: "#aab7c4",
+  //     },
+  //   },
+  //   invalid: {
+  //     color: "#bdcaf7",
+  //     iconColor: "#bdcaf7",
+  //   },
+  // };
 
   return (
     <form className="mt-3 _card_details" onSubmit={handleSubmit}>
@@ -159,6 +159,9 @@ const ApplePaymentForm = ({ order, userLogged }) => {
             applePay: "always",
             googlePay: "never",
           },
+        }}
+        onClick={() => {
+          handleSubmit();
         }}
       />
     </form>
