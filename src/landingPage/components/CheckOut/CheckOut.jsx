@@ -758,7 +758,7 @@ export default function CheckOut() {
                 src={orderEvent.banner}
                 alt="event"
                 className="img-fluid"
-                style={{ maxWidth: 150 }}
+                style={{ maxWidth: 150, maxHeight: 100 }}
               />
             </div>
             <div className="_details col-6 text-start">
