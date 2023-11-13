@@ -18,17 +18,17 @@ export const stripePromise = loadStripe(
 export default function CheckOut() {
   const navigate = useNavigate();
   // eslint-disable-next-line
-  const [isAppleProduct, setIsAppleProduct] = useState(true);
+  const [isAppleProduct, setIsAppleProduct] = useState(false);
 
-  // useEffect(() => {
-  //   const detectAppleProduct = () => {
-  //     const userAgent = window.navigator.userAgent;
-  //     const isApple = /Mac|iPhone|iPod|iPad/.test(userAgent);
-  //     setIsAppleProduct(isApple);
-  //   };
+  useEffect(() => {
+    const detectAppleProduct = () => {
+      const userAgent = window.navigator.userAgent;
+      const isApple = /Mac|iPhone|iPod|iPad/.test(userAgent);
+      setIsAppleProduct(isApple);
+    };
 
-  //   detectAppleProduct();
-  // }, []);
+    detectAppleProduct();
+  }, []);
 
   const [btnClicked, setBtnClicked] = useState(false);
   // eslint-disable-next-line
