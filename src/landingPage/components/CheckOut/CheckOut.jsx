@@ -754,7 +754,12 @@ export default function CheckOut() {
           </div>
           <div className="_event_details row px-3">
             <div className="_img col-5">
-              <img src={orderEvent.banner} alt="event" className="img-fluid" />
+              <img
+                src={orderEvent.banner}
+                alt="event"
+                className="img-fluid"
+                style={{ maxWidth: 150 }}
+              />
             </div>
             <div className="_details col-6 text-start">
               <h3 className="_name">{orderEvent.name}</h3>
