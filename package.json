@@ -1,6 +1,9 @@
 {
   "name": "eticket-backend",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=16.20.1"
+  },
   "description": "",
   "main": "index.js",
   "type": "module",
