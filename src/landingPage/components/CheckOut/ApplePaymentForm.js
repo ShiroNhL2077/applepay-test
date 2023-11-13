@@ -5,7 +5,7 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 
-const ApplePay = () => {
+const ApplePaymentForm = () => {
   const stripe = useStripe();
   const elements = useElements();
   const [paymentRequest, setPaymentRequest] = useState(null);
@@ -24,9 +24,11 @@ const ApplePay = () => {
       },
       requestPayerName: true,
       requestPayerEmail: true,
+      paymentMethod: {
+        supportedMethods: "https://apple.com/apple-pay",
+      },
     });
 
-    // Check the availability of the Payment Request API.
     pr.canMakePayment().then((result) => {
       if (result) {
         setPaymentRequest(pr);
@@ -35,24 +37,25 @@ const ApplePay = () => {
 
     pr.on("paymentmethod", async (e) => {
       const { error: backendError, clientSecret } = await fetch(
-        "/create-payment-intent",
+        `${process.env.REACT_APP_API_URL}orders/stripe/createIntent`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            paymentMethodType: "card",
+            paymentMethodType: "apple_pay",
             currency: "usd",
+            // Include any other necessary parameters for Apple Pay
           }),
         }
       ).then((r) => r.json());
 
       if (backendError) {
+        console.error("Backend error:", backendError.message);
         return;
       }
 
-      // eslint-disable-next-line
       const { error: stripeError, paymentIntent } =
         await stripe.confirmCardPayment(
           clientSecret,
@@ -63,15 +66,11 @@ const ApplePay = () => {
         );
 
       if (stripeError) {
-        // Show error to your customer (e.g., insufficient funds)
+        console.error("Stripe error:", stripeError.message);
         return;
       }
 
-      // Show a success message to your customer
-      // There's a risk of the customer closing the window before callback
-      // execution. Set up a webhook or plugin to listen for the
-      // payment_intent.succeeded event that handles any business critical
-      // post-payment actions.
+      console.log(`Payment ${paymentIntent.status}: ${paymentIntent.id}`);
     });
   }, [stripe, elements]);
 
@@ -84,4 +83,4 @@ const ApplePay = () => {
   );
 };
 
-export default ApplePay;
+export default ApplePaymentForm;
