@@ -17,7 +17,7 @@ export const stripePromise = loadStripe(
 
 export default function CheckOut() {
   const navigate = useNavigate();
-
+  // eslint-disable-next-line
   const [isAppleProduct, setIsAppleProduct] = useState(true);
 
   // useEffect(() => {

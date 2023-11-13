@@ -17,7 +17,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
 
   const stripe = useStripe();
   const elements = useElements();
-
+  // eslint-disable-next-line
   const [btnDisabled, setBtnDisabled] = useState(false);
   // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
@@ -110,22 +110,6 @@ const ApplePaymentForm = ({ order, userLogged }) => {
       // Use paymentMethod.id to handle the payment on the server
       createOrderWithStripeClient(orderDetails);
     }
-  };
-
-  const cardStyle = {
-    payment: {
-      color: "#bdcaf7",
-      fontFamily: '"TT Commons", sans-serif',
-      fontSmoothing: "antialiased",
-      fontSize: "16px",
-      "::placeholder": {
-        color: "#aab7c4",
-      },
-    },
-    invalid: {
-      color: "#bdcaf7",
-      iconColor: "#bdcaf7",
-    },
   };
 
   return (
