@@ -36,8 +36,6 @@ export default function Cart() {
     }
   }, []);
 
-  console.log(ticketsDate);
-
   const handleDeleteItem = (index) => {
     dispatch(removeItemsFromCart(index));
   };
