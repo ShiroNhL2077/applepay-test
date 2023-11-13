@@ -118,16 +118,16 @@ const PaymentForm = ({ order, userLogged }) => {
 
   const cardStyle = {
     base: {
-      color: "#bdcaf7",
+      color: "#000",
       fontFamily: '"TT Commons", sans-serif',
       fontSmoothing: "antialiased",
       fontSize: "16px",
       "::placeholder": {
-        color: "#aab7c4",
+        color: "#000",
       },
     },
     invalid: {
-      color: "#bdcaf7",
+      color: "#000",
       iconColor: "#bdcaf7",
     },
   };

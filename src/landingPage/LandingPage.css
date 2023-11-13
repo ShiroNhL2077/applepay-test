@@ -428,7 +428,7 @@ input[type="number"] {
   top: 15%;
   right: 5%;
   max-width: 30%;
-  height: 524px; 
+  height: 524px;
   border-radius: 50px;
   box-shadow: 0px 9px 38px #cdd2ff;
   display: flex;
@@ -436,7 +436,6 @@ input[type="number"] {
   flex-direction: column;
   transition: bottom 1s ease-in-out;
 }
-
 
 .home_divider_lg {
   background-color: #57bec080;
@@ -477,12 +476,34 @@ input[type="number"] {
   border: 1px dashed #bdcaf7;
   background: #fff;
   box-shadow: 2px 6px 17px 0px #bdcaf7;
-  width: 18%;
-  margin: 0 1%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
+}
+
+@media (max-width: 576px) {
+  .home_event_dates_box ._dates ._date_box,
+  .home_event_dates_box ._more_box {
+    margin: 0 1%;
+    width: calc(94% / 3);
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .home_event_dates_box ._dates ._date_box,
+  .home_event_dates_box ._more_box {
+    margin: 0 1%;
+    width: 23%;
+  }
+}
+
+@media (min-width: 768px) {
+  .home_event_dates_box ._dates ._date_box,
+  .home_event_dates_box ._more_box {
+    margin: 0 1%;
+    width: 18%;
+  }
 }
 
 .home_event_dates_box ._dates ._date_box:hover {
@@ -563,8 +584,6 @@ input[type="number"] {
   border: 1px dashed #bdcaf7;
   background: #fff;
   box-shadow: 2px 6px 17px 0px #bdcaf7;
-  width: 18%;
-  margin: 0 1%;
 }
 
 .home_event_dates_box ._dates ._more_box {
@@ -669,8 +688,6 @@ input[type="number"] {
   color: #64c3c5;
   background: #fff;
 }
-
-
 
 /* media queries */
 @media (min-width: 320px) and (max-width: 480px) {
@@ -840,9 +857,7 @@ input[type="number"] {
   #price {
     font-size: 18px;
   }
-  
 }
-
 
 @media (min-width: 768px) and (max-width: 1024px) {
   .hero {
