@@ -3,7 +3,6 @@ import {
   useStripe,
   useElements,
   PaymentElement,
-  ExpressCheckoutElement,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
 // eslint-disable-next-line
@@ -152,12 +151,12 @@ const ApplePaymentForm = ({ order, userLogged }) => {
         pauseOnHover
         theme="light"
       />
-      <ExpressCheckoutElement
+      <PaymentElement
         className="mb-4 card_input"
         options={{
           wallets: {
-            applePay: "always",
-            googlePay: "always",
+            applePay: "auto",
+            googlePay: "never",
           },
         }}
       />
