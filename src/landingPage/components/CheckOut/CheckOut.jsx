@@ -199,9 +199,7 @@ export default function CheckOut() {
     appearance,
     clientSecret: cliSecret,
   };
-
-  console.log(orderEvent);
-
+  
   return (
     <main className="checkout_container">
       <ToastContainer

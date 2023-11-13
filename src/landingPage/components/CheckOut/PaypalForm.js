@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const PaypalForm = ({ order, userLogged }) => {
-  const [orderStatus, setOrderStatus] = useState(null);
-
   const createOrder = async (data, actions) => {
     // Assume your API returns the order details including currency and totalAmount
     const orderData = {
@@ -40,10 +39,6 @@ const PaypalForm = ({ order, userLogged }) => {
         purchase_units: [
           {
             description: "Event Tickets Purchase",
-            amount: {
-              currency_code: orderDetails.currency,
-              value: orderDetails.totalAmount.toFixed(2),
-            },
           },
         ],
         application_context: {
@@ -52,7 +47,6 @@ const PaypalForm = ({ order, userLogged }) => {
       });
     } catch (error) {
       console.error("Error creating PayPal order:", error);
-      setOrderStatus("error");
       throw new Error("Error creating PayPal order");
     }
   };
@@ -64,14 +58,13 @@ const PaypalForm = ({ order, userLogged }) => {
 
       // Check if the capture was successful
       if (captureDetails.status === "COMPLETED") {
-        setOrderStatus("success");
         // Additional logic to update UI or show success message
+        toast.success("Payment successful! Tickets purchased.");
       } else {
-        setOrderStatus("error");
         // Handle payment capture failure
+        toast.error("Error processing payment. Please try again.");
       }
     } catch (error) {
-      setOrderStatus("error");
       console.error("Error processing payment:", error);
     }
   };
@@ -83,15 +76,8 @@ const PaypalForm = ({ order, userLogged }) => {
       <PayPalButtons
         createOrder={createOrder}
         onApprove={onApprove}
-        onError={() => setOrderStatus("error")}
-        style={{ layout: "horizontal", color: "blue" }} // Set layout to 'horizontal' or 'vertical'
+        style={{ layout: "horizontal", color: "blue", tagline: false }}
       />
-      {orderStatus === "success" && (
-        <p>Payment successful! Tickets purchased.</p>
-      )}
-      {orderStatus === "error" && (
-        <p>Error processing payment. Please try again.</p>
-      )}
     </PayPalScriptProvider>
   );
 };
