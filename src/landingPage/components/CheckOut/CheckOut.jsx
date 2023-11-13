@@ -17,7 +17,7 @@ export const stripePromise = loadStripe(
 
 export default function CheckOut() {
   const navigate = useNavigate();
-  // eslint-disable-next-line
+
   const [isAppleProduct, setIsAppleProduct] = useState(true);
 
   // useEffect(() => {
@@ -131,34 +131,6 @@ export default function CheckOut() {
     }
   }, []);
 
-  const [cliSecret, setCliSecret] = useState();
-
-  const createPaymentIntent = async () => {
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}orders/stripe/createIntent`
-      );
-
-      setCliSecret(response.data.client_secret);
-      console.log(response.data.client_secret);
-    } catch (error) {
-      console.error("Error creating PaymentIntent:", error.message);
-      toast.error(
-        "An error occurred while processing your payment. Please try again."
-      );
-      setBtnDisabled(false);
-      return null;
-    }
-  };
-
-  const optionsApple = {
-    appearance,
-    // clientSecret: cliSecret,
-    mode: "payment",
-    amount: 1999,
-    currency: "eur",
-  };
-
   const getTotalPrice = (items) => {
     // Iterate through the items and calculate the total price
     let totalPrice = 0;
@@ -200,6 +172,101 @@ export default function CheckOut() {
       setPaymethDisabled(false);
       return;
     }
+  };
+
+  // const createOrderWithStripeClient = async () => {
+  //   const token = localStorage.getItem("token");
+  //   const orderDetails = {
+  //     eventId: orderEvent._id,
+  //     items: orderTickets.map(({ _id, orderQty }) => ({
+  //       ticketId: _id,
+  //       quantity: orderQty,
+  //     })),
+  //     participantDetails: {
+  //       firstname: firstName,
+  //       lastname: lastName,
+  //       email: email,
+  //     },
+  //     validityStartDate: orderTicketsDate.id,
+  //     validityEndDate: orderTicketsDate.id,
+  //     validityStartTime: "11:00:00",
+  //     validityEndTime: "20:00:00",
+  //   };
+  //   if (!token && userLogged) {
+  //     console.log("no token");
+  //     toast.error("Authentification error, please logout and login again.");
+  //     return;
+  //   }
+  //   try {
+  //     const response = await axios.post(
+  //       userLogged
+  //         ? `${process.env.REACT_APP_API_URL}orders/stripe/create`
+  //         : `${process.env.REACT_APP_API_URL}orders/stripe/guest/create`,
+  //       orderDetails,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     // Handle the successful response here, e.g., show a success message to the user
+  //     console.log(response);
+  //     console.log(response.data);
+  //     // localStorage.removeItem("cartTickets");
+  //     // localStorage.removeItem("cartEvent");
+  //     // localStorage.removeItem("ticketsDate");
+  //     toast.success("Payment successful");
+  //     setTimeout(() => {
+  //       navigate("/");
+  //     }, 2000);
+  //   } catch (error) {
+  //     // Handle any network or other errors here
+  //     if (error.response) {
+  //       // The request was made, but the server responded with an error status
+  //       console.error(
+  //         `Error response: ${error.response.status} - ${error.response.data}`
+  //       );
+  //       toast.error("An error has occured, please try again.");
+  //       setBtnDisabled(false);
+  //     } else if (error.request) {
+  //       // The request was made, but no response was received
+  //       console.error("No response received from the server");
+  //       toast.error("Server not responding, please try again later.");
+  //       setBtnDisabled(false);
+  //     } else {
+  //       // Something happened in setting up the request that triggered an error
+  //       console.error("Error setting up the request:", error.message);
+  //       toast.error("Something went while sending request, please try again.");
+  //       setBtnDisabled(false);
+  //     }
+  //   }
+  // };
+
+  const [cliSecret, setCliSecret] = useState();
+
+  const createPaymentIntent = async () => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}orders/stripe/createIntent`
+      );
+
+      setCliSecret(response.data.client_secret);
+      console.log(response.data.client_secret);
+    } catch (error) {
+      console.error("Error creating PaymentIntent:", error.message);
+      toast.error(
+        "An error occurred while processing your payment. Please try again."
+      );
+      setBtnDisabled(false);
+      return null;
+    }
+  };
+
+  const optionsApple = {
+    appearance,
+    clientSecret: cliSecret,
   };
 
   return (

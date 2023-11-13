@@ -41,8 +41,7 @@ export default function Navbar() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-    // eslint-disable-next-line
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, toggleDropdown]);
 
   return (
     <>

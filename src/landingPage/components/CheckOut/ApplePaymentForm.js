@@ -6,7 +6,7 @@ import {
   ExpressCheckoutElement,
 } from "@stripe/react-stripe-js";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "./PaymentForm.css";
@@ -17,13 +17,22 @@ const ApplePaymentForm = ({ order, userLogged }) => {
 
   const stripe = useStripe();
   const elements = useElements();
-  // eslint-disable-next-line
+
   const [btnDisabled, setBtnDisabled] = useState(false);
   // eslint-disable-next-line
   const [btnClicked, setBtnClicked] = useState(false);
 
-  const createOrderWithStripeClient = async (oD) => {
+  const createOrderWithStripeClient = async () => {
     const token = localStorage.getItem("token");
+    const orderDetails = {
+      eventId: order.eventId,
+      items: order.items,
+      participantDetails: order.participantDetails,
+      validityStartDate: order.validityStartDate,
+      validityEndDate: order.orderTicketsDate,
+      validityStartTime: "11:00:00",
+      validityEndTime: "20:00:00",
+    };
     if (!token && userLogged) {
       console.log("no token");
       toast.error("Authentification error, please logout and login again.");
@@ -34,7 +43,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
         userLogged
           ? `${process.env.REACT_APP_API_URL}orders/stripe/create`
           : `${process.env.REACT_APP_API_URL}orders/stripe/guest/create`,
-        oD,
+        orderDetails,
         {
           headers: {
             "Content-Type": "application/json",
@@ -112,6 +121,22 @@ const ApplePaymentForm = ({ order, userLogged }) => {
     }
   };
 
+  const cardStyle = {
+    payment: {
+      color: "#bdcaf7",
+      fontFamily: '"TT Commons", sans-serif',
+      fontSmoothing: "antialiased",
+      fontSize: "16px",
+      "::placeholder": {
+        color: "#aab7c4",
+      },
+    },
+    invalid: {
+      color: "#bdcaf7",
+      iconColor: "#bdcaf7",
+    },
+  };
+
   return (
     <form className="mt-3 _card_details" onSubmit={handleSubmit}>
       <ToastContainer
@@ -131,7 +156,7 @@ const ApplePaymentForm = ({ order, userLogged }) => {
         options={{
           wallets: {
             applePay: "always",
-            googlePay: "never",
+            googlePay: "always",
           },
         }}
       />
