@@ -28,28 +28,30 @@ const orderSchema = new mongoose.Schema({
         min: 1,
       },
       isDiscounted: Boolean,
+      qrCode: String, // Add the QR code field
+      validity: {
+        startDate: Date,
+        endDate: Date,
+        startTime: String,
+        endTime: String,
+      },
+      purchaseDate: Date, // Add the purchase date field
     },
   ],
   isPaid: {
     type: Boolean,
-    default: false, // Set to false initially, indicating the order is unpaid
+    default: false,
   },
   orderDate: {
-    type: Date, // Date and time when the order was placed
-    default: Date.now, // Set the default value to the current date and time
+    type: Date,
+    default: Date.now,
   },
   paymentDetails: {
-    method: String, // Payment method used
-    transactionId: String, // Payment transaction ID
+    method: String,
+    transactionId: String,
     status: String,
-    totalAmount: Number, // Total amount paid
-    promoCode: String, // Promo code or discount applied
-    /* card: {
-      last4: String, // Add the last 4 digits of the card number
-      brand: String, // Add the card brand
-      expMonth: Number, // Add the card's expiration month
-      expYear: Number, // Add the card's expiration year
-    },*/
+    totalAmount: Number,
+    promoCode: String,
   },
   participantDetails: {
     firstname: {
@@ -83,7 +85,9 @@ const orderSchema = new mongoose.Schema({
     businessAddress: String,
     businessPhone: String,
   },
+
 });
+
 
 const Order = mongoose.model("Order", orderSchema);
 

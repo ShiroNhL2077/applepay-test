@@ -9,7 +9,7 @@ import Ticket from "../models/Tickets.js";
 import OrderTicketAssociation from "../models/orderTicketAssociation.js";
 import Stripe from "stripe";
 import paypal from "paypal-rest-sdk";
-import { sendStripePaymentEmail } from "./mailerController.js";
+import { sendPaymentEmail } from "./mailerController.js";
 
 import dotenv from "dotenv";
 /* Accessing .env content */
@@ -61,14 +61,18 @@ async function generateUniqueOrderCode() {
   }
 }
 
-/**Create and Pay an order with Stripe: apple pay */
-
 export const createPaymentIntent = async (req, res) => {
   try {
+    const { amount } = req.body;
+
     const intent = await stripeClient.paymentIntents.create({
-      amount: 1099,
+      amount: 1999,
+      payment_method_types: ["card"],
       currency: "eur",
+      // Add other parameters specific to the payment method (e.g., setup_future_usage for cards)
     });
+
+    console.log(req.body);
     res.json({ client_secret: intent.client_secret });
   } catch (error) {
     console.error("Error creating PaymentIntent:", error.message);
@@ -76,15 +80,328 @@ export const createPaymentIntent = async (req, res) => {
   }
 };
 
-/**Create and Pay an order with Stripe: card */
+// In createOrderWithStripe function
 export const createOrderWithStripe = async (req, res) => {
+  // Start a MongoDB session
   const session = await mongoose.startSession({
     defaultTransactionOptions: {
       readConcern: { level: "snapshot" },
       writeConcern: { w: "majority" },
     },
-    // Set the expiration time for the session (in milliseconds)
-    expire: 3600000, // 1 hour (adjust the time as needed)
+    expire: 3600000,
+  });
+  session.startTransaction();
+
+  try {
+    // Extract necessary data from the request body
+    const {
+      eventId,
+      items,
+      participantDetails,
+      validityStartDate,
+      validityEndDate,
+      validityStartTime,
+      validityEndTime,
+      paymentMethod,
+    } = req.body;
+
+    // Find the event in the database
+    const event = await Event.findById(eventId).session(session);
+    if (!event) {
+      return res.status(404).json({ error: "Event not found..." });
+    }
+
+    // Initialize variables for total amount, total quantity, and the current ticket
+    let totalAmount = 0;
+    let totalQuantity = 0;
+    let ticket;
+
+    // Generate a unique order code
+    const uniqueOrderCode = await generateUniqueOrderCode();
+
+    // Create the initial order data
+    const orderData = {
+      event: eventId,
+      isPaid: false, // Set isPaid to false initially
+      code: uniqueOrderCode.toString(),
+      participantDetails: participantDetails,
+      tickets: [],
+    };
+
+    // If there is a logged-in user, associate the order with the user
+    if (req.user) {
+      orderData.user = req.user.id;
+    }
+
+    // Create a new Order instance with the initial data
+    const order = new Order(orderData);
+
+    // Save the order to the database
+    await order.save();
+
+    // Array to store details of each ticket for email purposes
+    const ticketDetails = [];
+
+    // Process each item in the request and update order details
+    for (const item of items) {
+      const { ticketId, quantity } = item;
+      totalQuantity += quantity;
+
+      // Find the ticket in the database
+      ticket = await Ticket.findById(ticketId).session(session);
+      if (!ticket) {
+        return res.status(404).json({ error: "Ticket not found" });
+      }
+
+      // Validate quantity against the ticket's limits
+      const { minQuantity, maxQuantity } = ticket.ticketsPerOrder;
+      if (quantity < minQuantity || quantity > maxQuantity) {
+        return res.status(400).json({
+          error: `Quantity must be between ${minQuantity} and ${maxQuantity}`,
+        });
+      }
+
+      // Calculate the total amount based on ticket price and quantity
+      totalAmount += ticket.price * quantity;
+
+      // Generate QR code data
+      const qrCodeData = {
+        firstName: participantDetails.firstname,
+        lastName: participantDetails.lastname,
+        eventName: event.eventName,
+        ticketCode: generateTicketCode(),
+        ticketName: ticket.name,
+        ticketLocation: ticket.location,
+        validity: {
+          startDate: validityStartDate,
+          endDate: validityEndDate,
+          startTime: validityStartTime,
+          endTime: validityEndTime,
+        },
+      };
+
+      const qrCodeDataJson = JSON.stringify(qrCodeData);
+
+      // Generate QR code image URL
+      const qrCode = await QRCode.toDataURL(qrCodeDataJson);
+
+      // Create ticket detail object
+      const ticketDetail = {
+        ticket: ticketId,
+        name: ticket.name,
+        price: ticket.price,
+        quantity: quantity,
+        qrCode: qrCode,
+        purchaseDate: new Date(),
+      };
+
+      // Update order with ticket details
+      order.tickets.push({
+        ticket: ticketId,
+        quantity: 1,
+        validity: {
+          startDate: validityStartDate,
+          endDate: validityEndDate,
+          startTime: validityStartTime,
+          endTime: validityEndTime,
+        },
+        qrCode: qrCode,
+        isDiscounted: ticket.priceCategory.isDiscounted,
+        purchaseDate: new Date(),
+        // Save additional ticket details to the order document
+        additionalDetails: {
+          qrCode: qrCode,
+          // Add more details as needed
+        },
+      });
+
+      // Save additional ticket details to the database
+      await order.save();
+
+      // Add ticket detail to the array for email
+      ticketDetails.push(ticketDetail);
+    }
+
+    // Commit the transaction in the database
+    await session.commitTransaction();
+    session.endSession();
+
+    // Create a customer in Stripe
+    const customer = await stripeClient.customers.create({
+      email: participantDetails.email,
+      name: `${participantDetails.firstname} ${participantDetails.lastname}`,
+      metadata: {
+        ip_address: req.ip,
+      },
+    });
+
+    // Determine currency based on the ticket or default to "usd"
+    const currency = ticket ? ticket.currency.toLowerCase() : "usd";
+    const sessionOptions = {
+      payment_method_types: ["card", "klarna"],
+      customer: customer.id,
+      payment_method: paymentMethod,
+      metadata: {
+        // Add your metadata here if needed
+      },
+      confirm: true,
+      //setup_future_usage: "off_session",
+      return_url: "https://your-website.com/success", // Add your success URL here
+    };
+    // Create a payment intent with Stripe
+    const paymentIntent = await stripeClient.paymentIntents.create({
+      amount: Math.round(totalAmount * 100),
+      currency,
+      confirm: true,
+      customer: customer.id,
+      payment_method: paymentMethod,
+      ...sessionOptions,
+      metadata: {
+        orderId: order.id, // This is setting the orderId in the metadata
+      },
+    });
+    // Add the order creation request to the queue
+
+    // Return success response with order details
+    return res.status(201).json({
+      message: "Order created successfully",
+      clientSecret: paymentIntent.client_secret,
+      //ticketDetails: ticketDetails,
+    });
+  } catch (error) {
+    try {
+      // If an error occurs, abort the transaction in the database
+      await session.abortTransaction();
+    } catch (abortError) {
+      console.error("Error aborting transaction:", abortError);
+    } finally {
+      // End the MongoDB session
+      session.endSession();
+    }
+
+    // Return error response
+    return res
+      .status(500)
+      .json({ error: `Order creation failed: ${error.message}` });
+  }
+};
+
+// Function to handle successful payment webhook events
+
+export const handlePaymentSuccessWebhook = async (req, res, event) => {
+  if (event.type === "payment_intent.succeeded") {
+    try {
+      const orderId = event.data.object.metadata.orderId;
+
+      // Log the initial order status
+      console.log("Initial Order Status:", await Order.findById(orderId));
+
+      const order = await Order.findById(orderId)
+        .populate("event")
+        .populate("tickets.ticket");
+
+      if (!order) {
+        console.error("Order not found");
+        return res.status(404).send("Order not found");
+      }
+
+      if (order.isPaid) {
+        console.log("Order is already paid");
+        return res.json({ received: true });
+      }
+
+      let totalAmount = 0;
+      let totalQuantity = 0;
+
+      // Your existing logic to update remainingTickets and soldOut in the database
+      for (const orderTicket of order.tickets) {
+        const ticketId = orderTicket.ticket._id;
+        const quantity = orderTicket.quantity;
+
+        // Find the ticket in the database
+        const ticket = await Ticket.findById(ticketId);
+
+        if (ticket) {
+          ticket.displayOptions.remainingTickets -= quantity;
+
+          if (ticket.displayOptions.remainingTickets <= 0) {
+            ticket.displayOptions.remainingTickets = 0;
+            ticket.displayOptions.soldOut = true;
+          }
+
+          // Save the updated ticket to the database
+          await ticket.save();
+
+          // Update totalQuantity and totalAmount
+          totalQuantity += quantity;
+          totalAmount += ticket.price * quantity;
+        }
+      }
+
+      // Update order status asynchronously
+      await Order.findByIdAndUpdate(orderId, {
+        $set: {
+          isPaid: true,
+          paymentDetails: {
+            method: "stripe",
+            transactionId: event.data.object.id,
+            totalAmount: totalAmount,
+            status: "succeeded",
+          },
+        },
+      });
+
+      // Log the updated order status
+      console.log("Updated Order Status:", await Order.findById(orderId));
+
+      // Your existing logic to send payment success email
+      await sendPaymentEmail({
+        customerEmail: order.participantDetails.email,
+        totalAmount: totalAmount,
+        currency: order.tickets[0].ticket.currency,
+        email: order.participantDetails.email,
+        transactionId: event.data.object.id,
+        totalQuantity: totalQuantity,
+        orderCode: order.code,
+        purchaseDate: order.createdAt,
+        eventDetails: {
+          eventName: order.event.eventName,
+          location: order.event.location,
+          startDate: order.event.startDate,
+          startTime: order.event.startTime,
+          endTime: order.event.endHour,
+        },
+        participantDetails: {
+          firstname: order.participantDetails.firstname,
+          lastname: order.participantDetails.lastname,
+        },
+        ticketDetails: order.tickets.map((orderTicket) => ({
+          name: orderTicket.ticket.name,
+          price: orderTicket.ticket.price,
+          quantity: orderTicket.quantity,
+          qrCode: orderTicket.qrCode, // Include qrCode in ticketDetails
+          purchaseDate: orderTicket.purchaseDate, // Include purchaseDate in ticketDetails
+        })),
+      });
+
+      console.log("Order and tickets updated successfully");
+    } catch (error) {
+      console.error("Error handling payment success:", error);
+      return res.status(500).send("Internal Server Error");
+    }
+  }
+
+  res.json({ received: true });
+};
+
+// Function to create an order with PayPal
+export const createOrderWithPayPal = async (req, res) => {
+  const session = await mongoose.startSession({
+    defaultTransactionOptions: {
+      readConcern: { level: "snapshot" },
+      writeConcern: { w: "majority" },
+    },
+    expire: 3600000,
   });
   session.startTransaction();
 
@@ -97,25 +414,19 @@ export const createOrderWithStripe = async (req, res) => {
       validityEndDate,
       validityStartTime,
       validityEndTime,
-      paymentMethod,
     } = req.body;
-    // Step 1: Verify event
+
+    console.log(req.body);
+
     const event = await Event.findById(eventId).session(session);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
     }
 
-    // Initialize the totalAmount
     let totalAmount = 0;
-    let totalQuantity = 0;
-    // Generate a unique order code
-
-    const uniqueOrderCode = await generateUniqueOrderCode();
-    // Create a new order document
     const orderData = {
       event: eventId,
       isPaid: false,
-      code: uniqueOrderCode.toString(),
       participantDetails: participantDetails,
       tickets: [],
     };
@@ -126,35 +437,26 @@ export const createOrderWithStripe = async (req, res) => {
 
     const order = new Order(orderData);
 
-    // Create an array to store the QR codes
     const qrCodes = [];
-
-    // Create an object to group tickets by order
-    const orderTicketGroups = {};
-
-    // Initialize ticket
     let ticket;
 
-    // Step 5: Process items
     for (const item of items) {
       const { ticketId, quantity } = item;
-      totalQuantity += quantity; // Update the total quantity
-
-      // Verify the ticket and its availability (within the session)
       ticket = await Ticket.findById(ticketId).session(session);
-      if (!ticket) {
-        return res.status(404).json({ error: "Ticket not found" });
-      }
 
       const { minQuantity, maxQuantity } = ticket.ticketsPerOrder;
 
       if (quantity < minQuantity || quantity > maxQuantity) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(400).json({
           error: `Quantity must be between ${minQuantity} and ${maxQuantity}`,
         });
       }
 
       if (ticket.displayOptions.remainingTickets < quantity) {
+        await session.abortTransaction();
+        session.endSession();
         return res
           .status(400)
           .json({ error: "Insufficient ticket quantity available" });
@@ -176,7 +478,6 @@ export const createOrderWithStripe = async (req, res) => {
           ticketCode: generateTicketCode(),
           ticketName: ticket.name,
           ticketLocation: ticket.location,
-
           validity: {
             startDate: validityStartDate,
             endDate: validityEndDate,
@@ -191,12 +492,12 @@ export const createOrderWithStripe = async (req, res) => {
 
         qrCodes.push(url);
 
-        // Use the `ticketId` from the outer scope (defined within the loop)
         order.tickets.push({
           ticket: ticketId,
           quantity: 1,
           qrCode: url,
           isDiscounted: isDiscounted,
+          purchaseDate: new Date(),
           validity: {
             startDate: validityStartDate,
             endDate: validityEndDate,
@@ -204,347 +505,31 @@ export const createOrderWithStripe = async (req, res) => {
             endTime: validityEndTime,
           },
         });
-
-        if (!orderTicketGroups[order._id]) {
-          orderTicketGroups[order._id] = {
-            order: order._id,
-            tickets: [
-              {
-                ticket: ticketId,
-                qrCodes: [url],
-                purchaseDate: new Date(),
-                validity: {
-                  startDate: validityStartDate,
-                  endDate: validityEndDate,
-                  startTime: validityStartTime,
-                  endTime: validityEndTime,
-                },
-              },
-            ],
-          };
-        } else {
-          orderTicketGroups[order._id].tickets.push({
-            ticket: ticketId,
-            purchaseDate: new Date(),
-            qrCodes: [url],
-            validity: {
-              startDate: validityStartDate,
-              endDate: validityEndDate,
-              startTime: validityStartTime,
-              endTime: validityEndTime,
-            },
-          });
-        }
-
-        ticket.displayOptions.remainingTickets -= 1;
-
-        if (ticket.displayOptions.remainingTickets === 0) {
-          ticket.displayOptions.soldOut = true;
-        }
-
-        await ticket.save();
       }
     }
 
-    // Create a customer in Stripe with additional data, including the IP address
-    const customer = await stripeClient.customers.create({
-      email: participantDetails.email, // Customer's email
-      name: `${participantDetails.firstname} ${participantDetails.lastname}`, // Customer's name
-      metadata: {
-        ip_address: req.ip, // User's IP address
-        // Add other billing details if needed
-      },
-    });
-
-    // Retrieve the currency from the ticket and convert it to lowercase
-    const currency = ticket.currency.toLowerCase();
-
-    // Create a test payment intent using Stripe library
-    const paymentIntent = await stripeClient.paymentIntents.create({
-      amount: Math.round(totalAmount * 100),
-      currency,
-      payment_method_types: ["card", "klarna"],
-      payment_method: paymentMethod,
-      confirm: true,
-      customer: customer.id, // Associate the customer with the payment intent
-    });
-
-    // Handle the payment intent status
-    if (paymentIntent.status === "succeeded") {
-      order.isPaid = true;
-      order.paymentDetails = {
-        method: "stripe",
-        transactionId: paymentIntent.id,
-        totalAmount: totalAmount,
-        status: "succeeded",
-      };
-    } else {
-      return res.status(400).json({ error: "Payment failed" });
-    }
-
-    // Save changes to the database in a transaction
-    await order.save({ session });
-
-    // Insert grouped order-ticket associations into the OrderTicketAssociation collection
-    const groupedAssociations = Object.values(orderTicketGroups).map(
-      (group) => ({
-        ...group,
-        purchaseDate: new Date(),
-        validity: {
-          startDate: validityStartDate,
-          endDate: validityEndDate,
-          startTime: validityStartTime,
-          endTime: validityEndTime,
-        },
-      })
-    );
-    await OrderTicketAssociation.insertMany(groupedAssociations, { session });
-    const ticketDetails = [];
-
-    for (const item of items) {
-      const ticketId = item.ticketId;
-      const quantity = item.quantity;
-      const ticket = await Ticket.findById(ticketId);
-
-      // Push the ticket details to the array
-      ticketDetails.push({
-        name: ticket.name,
-        price: ticket.price,
-        quantity: quantity,
-      });
-    }
-    await session.commitTransaction();
-    session.endSession();
-    // Send payment success email to the customer
-    // After calculating the totalQuantity
-    console.log("Total number of tickets bought:", totalQuantity);
-    const emailResponse = await sendStripePaymentEmail({
-      customerEmail: participantDetails.email,
-      totalAmount: totalAmount,
-      currency: ticket.currency,
-      email: participantDetails.email,
-      transactionId: paymentIntent.id,
-      totalQuantity: totalQuantity,
-      orderCode: uniqueOrderCode,
-      purchaseDate: Date(),
-      eventDetails: {
-        eventName: event.eventName,
-        location: event.location,
-        startDate: event.startDate,
-        startTime: event.startTime,
-        endTime: event.endHour,
-      },
-      participantDetails: {
-        firstname: participantDetails.firstname,
-        lastname: participantDetails.lastname,
-      },
-      ticketDetails: ticketDetails, // Pass the array of ticket details
-    });
-
-    return res
-      .status(201)
-      .json({ message: "Order created successfully", emailResponse });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    return res
-      .status(500)
-      .json({ error: `Order creation failed: ${error.message}` });
-  }
-};
-
-// Function to create an order with PayPal
-export const createOrderWithPayPal = async (req, res) => {
-  const session = await mongoose.startSession({
-    defaultTransactionOptions: {
-      readConcern: { level: "snapshot" },
-      writeConcern: { w: "majority" },
-      // Add other session options as needed
-    },
-    // Set the expiration time for the session (in milliseconds)
-    expire: 3600000, // 1 hour (adjust the time as needed)
-  });
-  session.startTransaction();
-
-  try {
-    const {
-      eventId,
-      items,
-      participantDetails,
-      validityStartDate,
-      validityEndDate,
-      validityStartTime,
-      validityEndTime,
-    } = req.body;
-
-    // Step 1: Verify the event
-    const event = await Event.findById(eventId).session(session);
-    if (!event) {
-      return res.status(404).json({ error: "Event not found" });
-    }
-
-    // Initialize the totalAmount
-    let totalAmount = 0;
-
-    // Create a new order document
-    const orderData = {
-      event: eventId,
-      isPaid: false, // Initially, the order is unpaid
-      participantDetails: participantDetails,
-      tickets: [],
-    };
-
-    if (req.user) {
-      orderData.user = req.user.id;
-    }
-
-    const order = new Order(orderData);
-
-    // Create an array to store the QR codes
-    const qrCodes = [];
-
-    // Create an object to group tickets by order
-    const orderTicketGroups = {};
-
-    // Initialize ticket
-    let ticket;
-
-    // Step 2: Process items
-    for (const item of items) {
-      const { ticketId, quantity } = item;
-
-      // Verify the ticket and its availability (within the session)
-      ticket = await Ticket.findById(ticketId).session(session);
-      if (!ticket) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(404).json({ error: "Ticket not found" });
-      }
-
-      const { minQuantity, maxQuantity } = ticket.ticketsPerOrder;
-
-      if (quantity < minQuantity || quantity > maxQuantity) {
-        await session.abortTransaction();
-        session.endSession();
-        return res.status(400).json({
-          error: `Quantity must be between ${minQuantity} and ${maxQuantity}`,
-        });
-      }
-
-      if (ticket.displayOptions.remainingTickets < quantity) {
-        await session.abortTransaction();
-        session.endSession();
-        return res
-          .status(400)
-          .json({ error: "Insufficient ticket quantity available" });
-      }
-
-      const isDiscounted = ticket.priceCategory.isDiscounted;
-      if (isDiscounted) {
-        totalAmount +=
-          (ticket.price - ticket.priceCategory.discountAmount) * quantity;
-      } else {
-        totalAmount += ticket.price * quantity;
-      }
-
-      for (let i = 0; i < quantity; i++) {
-        // Create QR codes and handle tickets as before
-        const qrCodeData = {
-          firstName: participantDetails.firstname,
-          lastName: participantDetails.lastname,
-          eventName: event.eventName,
-          ticketCode: generateTicketCode(), // Implement a function to generate ticket codes
-          ticketName: ticket.name,
-          ticketLocation: ticket.location,
-          validity: {
-            startDate: validityStartDate,
-            endDate: validityEndDate,
-            startTime: validityStartTime,
-            endTime: validityEndTime,
-          },
-        };
-
-        const qrCodeDataJson = JSON.stringify(qrCodeData);
-
-        const url = await QRCode.toDataURL(qrCodeDataJson); // Use a library to generate QR codes
-
-        qrCodes.push(url);
-
-        order.tickets.push({
-          ticket: ticketId,
-          quantity: 1,
-          qrCode: url,
-          isDiscounted: isDiscounted,
-        });
-
-        // Handle orderTicketGroups as before
-        if (!orderTicketGroups[order._id]) {
-          orderTicketGroups[order._id] = {
-            order: order._id,
-            tickets: [
-              {
-                ticket: ticketId,
-                qrCodes: [url],
-                purchaseDate: new Date(),
-                validity: {
-                  startDate: validityStartDate,
-                  endDate: validityEndDate,
-                  startTime: validityStartTime,
-                  endTime: validityEndTime,
-                },
-              },
-            ],
-          };
-        } else {
-          orderTicketGroups[order._id].tickets.push({
-            ticket: ticketId,
-            purchaseDate: new Date(),
-            qrCodes: [url],
-            validity: {
-              startDate: validityStartDate,
-              endDate: validityEndDate,
-              startTime: validityStartTime,
-              endTime: validityEndTime,
-            },
-          });
-        }
-
-        // Update the remaining ticket count and mark as sold out if necessary
-        ticket.displayOptions.remainingTickets -= 1;
-
-        if (ticket.displayOptions.remainingTickets === 0) {
-          ticket.displayOptions.soldOut = true;
-        }
-
-        await ticket.save();
-      }
-    }
-
-    // Retrieve the currency from the ticket and convert it to uppercase
     const currency = ticket.currency.toUpperCase();
 
-    // Create a PayPal payment using the ticket's currency
     const createPayment = {
       intent: "sale",
       payer: {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://yourwebsite.com/success", // Replace with your actual return URL
-        cancel_url: "http://yourwebsite.com/cancel", // Replace with your actual cancel URL
+        return_url: "http://yourwebsite.com/success",
+        cancel_url: "http://yourwebsite.com/cancel",
       },
       transactions: [
         {
           amount: {
-            total: totalAmount.toFixed(2), // Convert back to currency
-            currency, // Use the currency from the ticket (uppercase)
+            total: totalAmount.toFixed(2),
+            currency,
           },
           description: "Event Tickets Purchase",
         },
       ],
     };
 
-    // Create a PayPal payment
     paypal.payment.create(createPayment, async (error, payment) => {
       if (error) {
         await session.abortTransaction();
@@ -553,13 +538,12 @@ export const createOrderWithPayPal = async (req, res) => {
       } else {
         for (const link of payment.links) {
           if (link.method === "REDIRECT") {
-            // Send the PayPal approval URL as a JSON response
             order.paymentDetails = {
               method: "PayPal",
               transactionId: payment.id,
-              status: "Pending", // Update with the appropriate status
+              status: "Pending",
               totalAmount: totalAmount,
-              promoCode: "", // Update with the promo code or discount applied
+              promoCode: "",
             };
             await order.save();
 
@@ -570,24 +554,11 @@ export const createOrderWithPayPal = async (req, res) => {
       }
     });
 
-    // Save changes to the database in a transaction
     await order.save({ session });
-
-    // Insert grouped order-ticket associations into the OrderTicketAssociation collection
-    const groupedAssociations = Object.values(orderTicketGroups).map(
-      (group) => ({
-        ...group,
-        purchaseDate: new Date(),
-      })
-    );
-    // Insert grouped associations into the OrderTicketAssociation collection
-    await OrderTicketAssociation.insertMany(groupedAssociations, { session });
 
     await session.commitTransaction();
     session.endSession();
-    // Send payment success email to the customer
-    sendStripePaymentEmail(participantDetails.email, totalAmount);
-    // Return a success response
+
     /* return res
       .status(201)
       .json({ message: "Order created successfully", order });*/
@@ -601,80 +572,99 @@ export const createOrderWithPayPal = async (req, res) => {
 };
 
 // Function to process PayPal webhook events
-export const processPayPalWebhookEvent = async (req, res) => {
-  // Retrieve the webhook event data from the request body
-  const event = req.body;
+export const handlePayPalPaymentSuccessWebhook = async (req, res, event) => {
+  if (event.event_type === "PAYMENTS.PAYMENT.CREATED") {
+    try {
+      const paymentId = event.resource.id;
 
-  console.log(event);
+      // Retrieve the order from the database based on the payment ID or any other relevant identifier
+      const order = await Order.findOne({
+        "paymentDetails.transactionId": paymentId,
+      })
+        .populate("event")
+        .populate("tickets.ticket");
 
-  try {
-    // Process the webhook event based on its type
-    switch (event.event_type) {
-      case "PAYMENTS.PAYMENT.CREATED":
-        // Handle the payment created event
-        // Retrieve the payment details
-        const paymentId = event.resource.id;
+      if (!order) {
+        console.error("Order not found");
+        return res.status(404).send("Order not found");
+      }
 
-        // Retrieve the order from the database based on the payment ID or any other relevant identifier
-        const order = await Order.findOne({
-          "paymentDetails.transactionId": paymentId,
-        });
+      if (order.isPaid) {
+        console.log("Order is already paid");
+        return res.json({ received: true });
+      }
 
-        // Check if the order exists
-        if (!order) {
-          return res.status(400).json({ error: "Order not found" });
-        }
+      let totalAmount = 0;
+      let totalQuantity = 0;
 
-        // Check if the order has already been paid
-        if (order.isPaid) {
-          return res.status(400).json({ error: "Order has already been paid" });
-        }
+      // Your existing logic to update remainingTickets and soldOut in the database
+      for (const orderTicket of order.tickets) {
+        const ticketId = orderTicket.ticket._id;
+        const quantity = orderTicket.quantity;
 
-        // Update the order with payment information
-        order.isPaid = true;
-        order.paymentDetails = {
-          method: "PayPal", // Update with the actual payment method used
-          transactionId: paymentId,
-          status: "Paid", // Update with the appropriate status
-          totalAmount: order.totalPrice, // Update with the actual total amount
-          promoCode: "", // Update with the promo code or discount applied
-        };
+        // Find the ticket in the database
+        const ticket = await Ticket.findById(ticketId);
 
-        // Update ticket availability based on the order
-        for (const item of order.tickets) {
-          const { ticket, quantity } = item;
-          const ticketDocument = await Ticket.findById(ticket);
+        if (ticket) {
+          ticket.displayOptions.remainingTickets -= quantity;
 
-          if (ticketDocument) {
-            ticketDocument.displayOptions.remainingTickets -= quantity;
-
-            if (ticketDocument.displayOptions.remainingTickets <= 0) {
-              ticketDocument.displayOptions.remainingTickets = 0;
-              ticketDocument.displayOptions.soldOut = true;
-            }
-
-            await ticketDocument.save();
+          if (ticket.displayOptions.remainingTickets <= 0) {
+            ticket.displayOptions.remainingTickets = 0;
+            ticket.displayOptions.soldOut = true;
           }
+
+          // Save the updated ticket to the database
+          await ticket.save();
+
+          // Update totalQuantity and totalAmount
+          totalQuantity += quantity;
+          totalAmount += ticket.price * quantity;
         }
+      }
 
-        await order.save();
+      // Update order status asynchronously
+      await Order.findByIdAndUpdate(order._id, {
+        $set: {
+          isPaid: true,
+          paymentDetails: {
+            method: "PayPal",
+            transactionId: paymentId,
+            totalAmount: totalAmount,
+            status: "Paid", // You may need to adjust the status based on PayPal webhook events
+          },
+        },
+      });
 
-        break;
+      // Log some data to help with debugging
+      console.log("Order and tickets updated successfully");
+      console.log("Order Data:", order);
+      console.log("Total Amount:", totalAmount);
+      console.log("Total Quantity:", totalQuantity);
 
-      // Add more cases to handle other webhook events if needed
+      // Your existing logic to send payment success email
+      await sendPaymentEmail({
+        order,
+        ticketDetails: order.tickets.map((orderTicket) => ({
+          name: orderTicket.ticket.name,
+          price: orderTicket.ticket.price,
+          quantity: orderTicket.quantity,
+          qrCode: orderTicket.qrCode, // Include qrCode in ticketDetails
+          purchaseDate: orderTicket.purchaseDate, // Include purchaseDate in ticketDetails
+        })),
+      });
 
-      default:
-        // Handle unrecognized webhook events
-        console.log("Received webhook event:", event.event_type);
-        break;
+      console.log("Email sent successfully");
+
+      // Send a single response to the client
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Error handling PayPal payment success:", error);
+      return res.status(500).send("Internal Server Error");
     }
-
-    // Send a response back to PayPal indicating successful processing of the webhook event
-    res.status(200).end();
-  } catch (error) {
-    // Handle errors that occurred during webhook event processing
-    console.error("Error processing webhook event:", error);
-    res.status(500).json({ error: "Failed to process webhook event" });
+  } else {
+    // Handle other webhook events if needed
+    console.log("Unhandled PayPal webhook event:", event.event_type);
+    res.json({ received: true });
   }
 };
 

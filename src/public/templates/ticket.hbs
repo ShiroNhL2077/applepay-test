@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Event</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            size: A4 portrait;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 20mm;
+        }
+
+        header {
+            background-color: #f2f2f2;
+            padding: 20px;
+            text-align: left;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .event-details {
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 24px; /* Adjust the font size of the event name */
+        }
+
+        .event-details p {
+            font-size: 16px; /* Adjust the font size of other details */
+            color: #333;
+        }
+
+        .qr-code {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with Logo -->
+    <header>
+        <img src="https://res.cloudinary.com/dw6pezn3k/image/upload/v1695079524/image-4_ml7j8e.png" alt="Your Logo">
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Event Name with Date, StartTime, and EndTime -->
+        <h1>{{eventName}}</h1>
+        <div class="event-details">
+            <p> Datum: {{startDate}}</p>
+            <p>{{startTime}} - {{EventendTime}}</p>
+            <p style="color: #333">Für: {{firstname}} {{lastname}}</p>
+            <p style="color: #333">Bestellung #{{orderCode}}</p>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-code">
+            <img src="{{qrcode}}" alt="QR Code" />
+        </div>
+    </main>
+
+</body>
+</html>

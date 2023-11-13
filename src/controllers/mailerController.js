@@ -1,8 +1,10 @@
 import emailjs from "@emailjs/nodejs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import util from "util";
 import fs from "fs";
 import path from "path";
+import pdf from "html-pdf";
 import { fileURLToPath } from "url";
 
 import dotenv from "dotenv";
@@ -21,8 +23,8 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendStripePaymentEmail = (data) => {
-  return new Promise((resolve, reject) => {
+export const sendPaymentEmail = (data) => {
+  return new Promise(async (resolve, reject) => {
     const {
       customerEmail,
       totalAmount,
@@ -34,10 +36,89 @@ export const sendStripePaymentEmail = (data) => {
       purchaseDate,
       eventDetails,
       participantDetails,
-      ticketDetails, // Include the ticket details data
+      ticketDetails,
     } = data;
-    // Format the ticket details into a string
-    const ticketDetailsContent = ticketDetails.map((ticketDetail, index) => {
+
+    // Load your email template
+    const emailTemplateSource = fs.readFileSync(
+      path.join(__dirname, "../public/templates/email.hbs"),
+      "utf8"
+    );
+
+    // Read the ticket template content
+    const ticketTemplateSource = fs.readFileSync(
+      path.join(__dirname, "../public/templates/ticket.hbs"),
+      "utf8"
+    );
+
+    // Generate ticket details content
+    const ticketDetailsContent = await Promise.all(
+      Array.from({ length: totalQuantity }, async (_, index) => {
+        const ticketDetail = ticketDetails[index];
+
+        // Replace placeholders in the ticket template with ticket details
+        const replacedTicketContent = ticketTemplateSource.replace(
+          /{{\s*([\w.-]+)\s*}}/g,
+          (ticketMatch, ticketPlaceholder) => {
+            switch (ticketPlaceholder) {
+              case "firstname":
+                return participantDetails.firstname;
+              case "lastname":
+                return participantDetails.lastname;
+              case "eventName":
+                return eventDetails.eventName;
+              case "startDate":
+                // Format the date as "09.03.2024"
+                const startDate = new Date(eventDetails.startDate);
+                const formattedStartDate = `${startDate.getDate()}.${
+                  startDate.getMonth() + 1
+                }.${startDate.getFullYear()}`;
+                return formattedStartDate;
+              case "startTime":
+                return eventDetails.startTime;
+              case "EventendTime":
+                return eventDetails.endTime;
+              case "orderCode":
+                return orderCode;
+              case "qrcode":
+                // Use the QR code from ticketDetails
+                return ticketDetail.qrCode;
+              case "purchaseDate":
+                // Use the purchase date from ticketDetails
+                return ticketDetail.purchaseDate;
+
+              // Add more dynamic details if needed
+              default:
+                return ticketMatch; // Keep the original placeholder if not recognized
+            }
+          }
+        );
+
+        // Create a PDF from the replaced ticket template
+        const ticketPdfOptions = { format: "Letter" };
+        const ticketPdfBuffer = await new Promise((pdfResolve, pdfReject) => {
+          pdf
+            .create(replacedTicketContent, ticketPdfOptions)
+            .toBuffer((err, buffer) => {
+              if (err) {
+                pdfReject(err);
+              } else {
+                pdfResolve(buffer);
+              }
+            });
+        });
+
+        return {
+          filename: `ticket_${orderCode}_${index + 1}.pdf`,
+          content: ticketPdfBuffer.toString("base64"),
+          encoding: "base64",
+          type: "application/pdf",
+        };
+      })
+    );
+
+    // Format the ticket details into a string for the email body
+    const ticketDetail = ticketDetails.map((ticketDetail, index) => {
       return `
     <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
       <p style="font-weight: bold;">Ticket #${index + 1}</p>
@@ -48,21 +129,11 @@ export const sendStripePaymentEmail = (data) => {
   `;
     });
 
-    const ticketDetailsHTML = ticketDetailsContent.join(""); // No extra line breaks
-
-
-    // Load your email template
-    const emailTemplateSource = fs.readFileSync(
-      path.join(__dirname, "../public/templates/email.hbs"),
-      "utf8"
-    );
-
-    // Define a regular expression to match all occurrences of placeholders
-    const placeholderRegExp = /{{\s*([\w.-]+)\s*}}/g;
+    const ticketDetailsHTML = ticketDetail.join(""); // Combine ticket details into a single string
 
     // Replace all occurrences of placeholders in the email template with the provided data
     const replacedEmailContent = emailTemplateSource.replace(
-      placeholderRegExp,
+      /{{\s*([\w.-]+)\s*}}/g,
       (match, placeholder) => {
         switch (placeholder) {
           case "firstname":
@@ -99,8 +170,8 @@ export const sendStripePaymentEmail = (data) => {
           case "purchaseDate":
             return purchaseDate;
           case "ticketInfo":
-            // Handle the ticketInfo data
-            return ticketDetailsHTML; // Use the formatted stringstring with line breaks
+            // Include the HTML representation of ticket attachments
+            return ticketDetailsHTML;
           default:
             return match; // Keep the original placeholder if not recognized
         }
@@ -110,8 +181,9 @@ export const sendStripePaymentEmail = (data) => {
     const mailOptions = {
       from: "no-reply@my-eticket.de",
       to: customerEmail,
-      subject: "Payment Confirmation",
-      html: replacedEmailContent, // Use HTML instead of text
+      subject: "Bestellbestätigung per E-Mail",
+      html: replacedEmailContent,
+      attachments: ticketDetailsContent,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
