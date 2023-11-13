@@ -13,6 +13,7 @@ export default function Cart() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // eslint-disable-next-line
   const { initialCartEvent, initialCartItems, initialTicketsDate } =
     useSelector((state) => state.cart);
 

@@ -9,6 +9,7 @@ export default function MobileCart({
   formatDateFull,
   formatTimeToAmPm,
 }) {
+  // eslint-disable-next-line
   const { initialCartItems, initialCartEvent, initialTicketsDate } =
     useSelector((state) => state.cart);
 
