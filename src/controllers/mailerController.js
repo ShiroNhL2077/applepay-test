@@ -1,10 +1,10 @@
 import emailjs from "@emailjs/nodejs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
-import util from "util";
+import puppeteer from "puppeteer";
 import fs from "fs";
 import path from "path";
-import pdf from "html-pdf";
+
 import { fileURLToPath } from "url";
 
 import dotenv from "dotenv";
@@ -23,40 +23,36 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export const sendPaymentEmail = (data) => {
-  return new Promise(async (resolve, reject) => {
-    const {
-      customerEmail,
-      totalAmount,
-      totalQuantity,
-      currency,
-      email,
-      transactionId,
-      orderCode,
-      purchaseDate,
-      eventDetails,
-      participantDetails,
-      ticketDetails,
-    } = data;
+export const sendPaymentEmail = async (data) => {
+  const {
+    customerEmail,
+    totalAmount,
+    totalQuantity,
+    currency,
+    email,
+    transactionId,
+    orderCode,
+    purchaseDate,
+    eventDetails,
+    participantDetails,
+    ticketDetails,
+  } = data;
 
-    // Load your email template
-    const emailTemplateSource = fs.readFileSync(
-      path.join(__dirname, "../public/templates/email.hbs"),
-      "utf8"
-    );
+  const emailTemplateSource = fs.readFileSync(
+    path.join(__dirname, "../public/templates/email.hbs"),
+    "utf8"
+  );
 
-    // Read the ticket template content
-    const ticketTemplateSource = fs.readFileSync(
-      path.join(__dirname, "../public/templates/ticket.hbs"),
-      "utf8"
-    );
+  const ticketTemplateSource = fs.readFileSync(
+    path.join(__dirname, "../public/templates/ticket.hbs"),
+    "utf8"
+  );
 
-    // Generate ticket details content
+  try {
     const ticketDetailsContent = await Promise.all(
       Array.from({ length: totalQuantity }, async (_, index) => {
         const ticketDetail = ticketDetails[index];
 
-        // Replace placeholders in the ticket template with ticket details
         const replacedTicketContent = ticketTemplateSource.replace(
           /{{\s*([\w.-]+)\s*}}/g,
           (ticketMatch, ticketPlaceholder) => {
@@ -68,7 +64,6 @@ export const sendPaymentEmail = (data) => {
               case "eventName":
                 return eventDetails.eventName;
               case "startDate":
-                // Format the date as "09.03.2024"
                 const startDate = new Date(eventDetails.startDate);
                 const formattedStartDate = `${startDate.getDate()}.${
                   startDate.getMonth() + 1
@@ -81,32 +76,21 @@ export const sendPaymentEmail = (data) => {
               case "orderCode":
                 return orderCode;
               case "qrcode":
-                // Use the QR code from ticketDetails
                 return ticketDetail.qrCode;
               case "purchaseDate":
-                // Use the purchase date from ticketDetails
                 return ticketDetail.purchaseDate;
-
-              // Add more dynamic details if needed
               default:
-                return ticketMatch; // Keep the original placeholder if not recognized
+                return ticketMatch;
             }
           }
         );
 
-        // Create a PDF from the replaced ticket template
-        const ticketPdfOptions = { format: "Letter" };
-        const ticketPdfBuffer = await new Promise((pdfResolve, pdfReject) => {
-          pdf
-            .create(replacedTicketContent, ticketPdfOptions)
-            .toBuffer((err, buffer) => {
-              if (err) {
-                pdfReject(err);
-              } else {
-                pdfResolve(buffer);
-              }
-            });
-        });
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
+        await page.setContent(replacedTicketContent);
+        const ticketPdfBuffer = await page.pdf({ format: "Letter" });
+
+        await browser.close();
 
         return {
           filename: `ticket_${orderCode}_${index + 1}.pdf`,
@@ -117,21 +101,19 @@ export const sendPaymentEmail = (data) => {
       })
     );
 
-    // Format the ticket details into a string for the email body
     const ticketDetail = ticketDetails.map((ticketDetail, index) => {
       return `
-    <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
-      <p style="font-weight: bold;">Ticket #${index + 1}</p>
-      <p>Ticketname: ${ticketDetail.name}</p>
-      <p>Ticket Preis: ${ticketDetail.price}</p>
-      <p>Menge: ${ticketDetail.quantity}</p>
-    </div>
-  `;
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #f9f9f9;">
+          <p style="font-weight: bold;">Ticket #${index + 1}</p>
+          <p>Ticketname: ${ticketDetail.name}</p>
+          <p>Ticket Preis: ${ticketDetail.price}</p>
+          <p>Menge: ${ticketDetail.quantity}</p>
+        </div>
+      `;
     });
 
-    const ticketDetailsHTML = ticketDetail.join(""); // Combine ticket details into a single string
+    const ticketDetailsHTML = ticketDetail.join("");
 
-    // Replace all occurrences of placeholders in the email template with the provided data
     const replacedEmailContent = emailTemplateSource.replace(
       /{{\s*([\w.-]+)\s*}}/g,
       (match, placeholder) => {
@@ -153,7 +135,6 @@ export const sendPaymentEmail = (data) => {
           case "eventName":
             return eventDetails.eventName;
           case "startDate":
-            // Format the date as "09.03.2024"
             const startDate = new Date(eventDetails.startDate);
             const formattedStartDate = `${startDate.getDate()}.${
               startDate.getMonth() + 1
@@ -170,10 +151,9 @@ export const sendPaymentEmail = (data) => {
           case "purchaseDate":
             return purchaseDate;
           case "ticketInfo":
-            // Include the HTML representation of ticket attachments
             return ticketDetailsHTML;
           default:
-            return match; // Keep the original placeholder if not recognized
+            return match;
         }
       }
     );
@@ -186,16 +166,14 @@ export const sendPaymentEmail = (data) => {
       attachments: ticketDetailsContent,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        reject(error);
-      } else {
-        console.log("Email sent:", info.response);
-        resolve(info.response);
-      }
-    });
-  });
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Email sent:", info.response);
+    return info.response; // Resolve with email response
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error; // Reject with the email sending error
+  }
 };
 
 // Function to generate a random verification token

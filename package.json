@@ -9,13 +9,16 @@
   "type": "module",
   "scripts": {
     "start": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "build": "npm run build"
   },
   "author": "R&M Software GmbH",
   "license": "proprietary",
   "dependencies": {
     "@emailjs/nodejs": "^2.2.0",
+    "archiver": "^6.0.1",
     "bcrypt": "^5.1.1",
+    "bl": "^4.0.3",
     "body-parser": "^1.20.2",
     "connect-mongodb-session": "^3.1.1",
     "cookie-parser": "^1.4.6",
@@ -25,8 +28,9 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "fs": "^0.0.1-security",
-    "html-pdf": "^3.0.1",
+    "hawk": "^9.0.1",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "migrate-mongo": "^11.0.0",
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
@@ -35,8 +39,11 @@
     "nodemailer": "^6.9.5",
     "nodemon": "^3.0.1",
     "paypal-rest-sdk": "^1.8.1",
+    "puppeteer": "^21.5.1",
     "qrcode": "^1.5.3",
+    "qs": "^6.2.3",
     "stripe": "^14.4.0",
+    "tunnel-agent": "^0.6.0",
     "util": "^0.12.5",
     "validator": "^13.11.0"
   }

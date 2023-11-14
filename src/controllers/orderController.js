@@ -9,15 +9,20 @@ import Ticket from "../models/Tickets.js";
 import OrderTicketAssociation from "../models/orderTicketAssociation.js";
 import Stripe from "stripe";
 import paypal from "paypal-rest-sdk";
+import puppeteer from "puppeteer";
+import fs from "fs";
+import path from "path";
+import archiver from "archiver";
 import { sendPaymentEmail } from "./mailerController.js";
 
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
 /* Accessing .env content */
 dotenv.config();
 
 /*Stripe client initialization */
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
-
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /*Paypal client initialization */
 
 paypal.configure({
@@ -61,6 +66,8 @@ async function generateUniqueOrderCode() {
   }
 }
 
+/**Create and Pay an order with Stripe: apple pay */
+
 export const createPaymentIntent = async (req, res) => {
   try {
     const { amount } = req.body;
@@ -79,6 +86,8 @@ export const createPaymentIntent = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+/**Create and Pay an order with Stripe: card */
 
 // In createOrderWithStripe function
 export const createOrderWithStripe = async (req, res) => {
@@ -288,7 +297,7 @@ export const createOrderWithStripe = async (req, res) => {
 
 // Function to handle successful payment webhook events
 
-export const handlePaymentSuccessWebhook = async (req, res, event) => {
+export const handlePaymentSuccessWebhook = async (request, response, event) => {
   if (event.type === "payment_intent.succeeded") {
     try {
       const orderId = event.data.object.metadata.orderId;
@@ -302,12 +311,12 @@ export const handlePaymentSuccessWebhook = async (req, res, event) => {
 
       if (!order) {
         console.error("Order not found");
-        return res.status(404).send("Order not found");
+        return response.status(404).send("Order not found");
       }
 
       if (order.isPaid) {
         console.log("Order is already paid");
-        return res.json({ received: true });
+        return response.json({ received: true });
       }
 
       let totalAmount = 0;
@@ -385,13 +394,17 @@ export const handlePaymentSuccessWebhook = async (req, res, event) => {
       });
 
       console.log("Order and tickets updated successfully");
+
+      // Send a response after handling the payment success event
+      return response.json({ received: true });
     } catch (error) {
       console.error("Error handling payment success:", error);
-      return res.status(500).send("Internal Server Error");
+      // If there's an error, send an internal server error response
+      return response.status(500).send("Internal Server Error");
     }
   }
 
-  res.json({ received: true });
+  // If the event type is not "payment_intent.succeeded", do not send a response here
 };
 
 // Function to create an order with PayPal
@@ -405,19 +418,16 @@ export const createOrderWithPayPal = async (req, res) => {
   });
   session.startTransaction();
 
+  const {
+    eventId,
+    items,
+    participantDetails,
+    validityStartDate,
+    validityEndDate,
+    validityStartTime,
+    validityEndTime,
+  } = req.body;
   try {
-    const {
-      eventId,
-      items,
-      participantDetails,
-      validityStartDate,
-      validityEndDate,
-      validityStartTime,
-      validityEndTime,
-    } = req.body;
-
-    console.log(req.body);
-
     const event = await Event.findById(eventId).session(session);
     if (!event) {
       return res.status(404).json({ error: "Event not found" });
@@ -523,19 +533,23 @@ export const createOrderWithPayPal = async (req, res) => {
         {
           amount: {
             total: totalAmount.toFixed(2),
-            currency,
+            currency_code: currency,
           },
           description: "Event Tickets Purchase",
         },
       ],
     };
 
+    console.log("we got this far");
+
     paypal.payment.create(createPayment, async (error, payment) => {
       if (error) {
+        console.error("PayPal payment error:", error);
         await session.abortTransaction();
         session.endSession();
         return res.status(400).json({ error: "PayPal payment failed" });
       } else {
+        console.log("PayPal payment success:", payment);
         for (const link of payment.links) {
           if (link.method === "REDIRECT") {
             order.paymentDetails = {
@@ -554,6 +568,7 @@ export const createOrderWithPayPal = async (req, res) => {
       }
     });
 
+    
     await order.save({ session });
 
     await session.commitTransaction();
@@ -665,6 +680,242 @@ export const handlePayPalPaymentSuccessWebhook = async (req, res, event) => {
     // Handle other webhook events if needed
     console.log("Unhandled PayPal webhook event:", event.event_type);
     res.json({ received: true });
+  }
+};
+
+// Define a function to handle downloading a single ticket
+export const downloadTicketHandler = async (req, res) => {
+  const { orderId, ticketId } = req.params;
+
+  try {
+    const order = await Order.findById(orderId)
+      .populate("event")
+      .populate("tickets.ticket");
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Check if the specified ticketId exists in the order
+    const orderTicket = order.tickets.find(
+      (t) => t.ticket._id.toString() === ticketId
+    );
+
+    if (!orderTicket) {
+      return res.status(404).json({ error: "Ticket not found in the order" });
+    }
+
+    // Prepare data for the PDF
+    const pdfData = {
+      customerEmail: order.participantDetails.email,
+      email: order.participantDetails.email,
+      orderCode: order.code,
+      eventDetails: {
+        eventName: order.event.eventName,
+        location: order.event.location,
+        startDate: order.event.startDate,
+        startTime: order.event.startTime,
+        endTime: order.event.endHour,
+      },
+      participantDetails: {
+        firstname: order.participantDetails.firstname,
+        lastname: order.participantDetails.lastname,
+      },
+      ticketDetails: {
+        qrCode: orderTicket.qrCode,
+        name: orderTicket.ticket.name,
+        price: orderTicket.ticket.price,
+        quantity: orderTicket.quantity,
+        purchaseDate: orderTicket.purchaseDate,
+      },
+    };
+
+    // Read the ticket template
+    const ticketTemplateSource = fs.readFileSync(
+      path.join(__dirname, "../public/templates/ticket.hbs"),
+      "utf8"
+    );
+
+    // Generate the PDF content using a template
+    const pdfContent = ticketTemplateSource.replace(
+      /{{\s*([\w.-]+)\s*}}/g,
+      (match, placeholder) => {
+        switch (placeholder) {
+          case "firstname":
+            return pdfData.participantDetails.firstname;
+          case "lastname":
+            return pdfData.participantDetails.lastname;
+          case "email":
+            return pdfData.participantDetails.email;
+          case "orderCode":
+            return pdfData.orderCode;
+          case "eventName":
+            return pdfData.eventDetails.eventName;
+          case "startDate":
+            const startDate = new Date(pdfData.eventDetails.startDate);
+            const formattedStartDate = `${startDate.getDate()}.${
+              startDate.getMonth() + 1
+            }.${startDate.getFullYear()}`;
+            return formattedStartDate;
+          case "startTime":
+            return pdfData.eventDetails.startTime;
+          case "EventendTime":
+            return pdfData.eventDetails.endTime;
+          case "qrcode":
+            return pdfData.ticketDetails.qrCode;
+          default:
+            return match;
+        }
+      }
+    );
+
+    // Launch puppeteer and generate PDF
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.setContent(pdfContent);
+    const pdfBuffer = await page.pdf({ format: "Letter" });
+    await browser.close();
+
+    // Set response headers for file download
+    res.setHeader("Content-Type", "application/pdf");
+    const fileName = `ticket_${ticketId}_${orderId}.pdf`;
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+
+    // Send the PDF buffer as the response
+    res.send(pdfBuffer);
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// Define a function to handle downloading all tickets
+
+export const downloadAllTicketsHandler = async (req, res) => {
+  const { orderId } = req.params;
+
+  try {
+    const order = await Order.findById(orderId)
+      .populate("event")
+      .populate("tickets.ticket");
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Create a temporary directory for storing PDF files
+    const tempDir = path.join(__dirname, "../temp");
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir);
+    }
+
+    // Generate and save each PDF file
+    const pdfPaths = [];
+    for (const orderTicket of order.tickets) {
+      const pdfData = {
+        customerEmail: order.participantDetails.email,
+        email: order.participantDetails.email,
+        orderCode: order.code,
+        eventDetails: {
+          eventName: order.event.eventName,
+          location: order.event.location,
+          startDate: order.event.startDate,
+          startTime: order.event.startTime,
+          endTime: order.event.endHour,
+        },
+        participantDetails: {
+          firstname: order.participantDetails.firstname,
+          lastname: order.participantDetails.lastname,
+        },
+        ticketDetails: {
+          name: orderTicket.ticket.name,
+          price: orderTicket.ticket.price,
+          quantity: orderTicket.quantity,
+          qrCode: orderTicket.qrCode,
+          purchaseDate: orderTicket.purchaseDate,
+        },
+      };
+
+      const ticketTemplateSource = fs.readFileSync(
+        path.join(__dirname, "../public/templates/ticket.hbs"),
+        "utf8"
+      );
+
+      const pdfContent = ticketTemplateSource.replace(
+        /{{\s*([\w.-]+)\s*}}/g,
+        (match, placeholder) => {
+          switch (placeholder) {
+            case "firstname":
+              return pdfData.participantDetails.firstname;
+            case "lastname":
+              return pdfData.participantDetails.lastname;
+            case "email":
+              return pdfData.participantDetails.email;
+            case "orderCode":
+              return pdfData.orderCode;
+            case "eventName":
+              return pdfData.eventDetails.eventName;
+            case "startDate":
+              const startDate = new Date(pdfData.eventDetails.startDate);
+              const formattedStartDate = `${startDate.getDate()}.${
+                startDate.getMonth() + 1
+              }.${startDate.getFullYear()}`;
+              return formattedStartDate;
+            case "startTime":
+              return pdfData.eventDetails.startTime;
+            case "EventendTime":
+              return pdfData.eventDetails.endTime;
+            case "qrcode":
+              return pdfData.ticketDetails.qrCode;
+            default:
+              return match;
+          }
+        }
+      );
+
+      const pdfPath = path.join(tempDir, `ticket_${orderTicket._id}.pdf`);
+      pdfPaths.push(pdfPath);
+
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+      await page.setContent(pdfContent);
+      await page.pdf({ path: pdfPath, format: "A4" });
+      await browser.close();
+    }
+
+    // Create a zip file and add all PDF files to it
+    const zipPath = path.join(tempDir, `all_tickets_${orderId}.zip`);
+    const outputZip = fs.createWriteStream(zipPath);
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Sets the compression level
+    });
+
+    outputZip.on("close", () => {
+      // Send the zip file as the response
+      res.download(zipPath, `all_tickets_${orderId}.zip`, (err) => {
+        // Delete temporary files and directory
+        pdfPaths.forEach((pdfPath) => {
+          fs.unlinkSync(pdfPath);
+        });
+        fs.rmdirSync(tempDir);
+      });
+    });
+
+    archive.on("error", (err) => {
+      console.error("Error creating zip file:", err);
+      res.status(500).json({ error: "Internal Server Error" });
+    });
+
+    archive.pipe(outputZip);
+    pdfPaths.forEach((pdfPath) => {
+      archive.append(fs.createReadStream(pdfPath), {
+        name: path.basename(pdfPath),
+      });
+    });
+    archive.finalize();
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

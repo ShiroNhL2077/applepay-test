@@ -20,7 +20,7 @@ import {
   handlePaymentSuccessWebhook,
   handlePayPalPaymentSuccessWebhook,
 } from "./controllers/orderController.js";
-import stripe from 'stripe'; // Import the Stripe library
+import stripe from "stripe"; // Import the Stripe library
 
 /* Accessing .env content */
 dotenv.config();
@@ -72,6 +72,7 @@ app.post(
         case "payment_intent.succeeded":
           // Handle payment success event
           await handlePaymentSuccessWebhook(request, response, event);
+          // Do not send a response here
           break;
         // Add more event types as needed
 
@@ -82,51 +83,47 @@ app.post(
       // Respond with a 200 OK status to acknowledge receipt of the event
       response.status(200).send("Webhook received");
     } catch (err) {
-      response.status(400).send(`Webhook Error: ${err.message}`);
+      // Respond with a 400 Bad Request status if there's an error
+      //response.status(400).send(`Webhook Error: ${err.message}`);
     }
   }
 );
 
 app.use(express.json());
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: "*" }));
 app.use(bodyParser.json());
 /* Middleware for parsing cookies */
 app.use(cookieParser());
 
-
-
 /**ROUTES */
 
 // Route for user login
-app.post('/login', login);
+app.post("/login", login);
 // Route for user logout
-app.get('/logout', logout);
+app.get("/logout", logout);
 
 // Routes based on user's role
-app.use('/buyer', BuyerRouter);
-app.use('/organizer', OrganizerRouter);
-app.use('/admin', AdminRouter);
-app.use('/reseller', ResellerRouter);
-app.use('/event-staff', SecurityAgentsRouter);
+app.use("/buyer", BuyerRouter);
+app.use("/organizer", OrganizerRouter);
+app.use("/admin", AdminRouter);
+app.use("/reseller", ResellerRouter);
+app.use("/event-staff", SecurityAgentsRouter);
 
 // Categories routes base path
-app.use('/categories', categoriesRouter);
+app.use("/categories", categoriesRouter);
 // Subscription plan routes base path
-app.use('/subscription-plan', subscriptionPlanRouter);
+app.use("/subscription-plan", subscriptionPlanRouter);
 // Auth routes base path
-app.use('/auth', authRoutes);
+app.use("/auth", authRoutes);
 // User routes base path
-app.use('/user', userRouter);
+app.use("/user", userRouter);
 // Tickets routes base path
-app.use('/tickets', ticketRouter);
+app.use("/tickets", ticketRouter);
 // Events routes base path
-app.use('/events', eventRouter);
+app.use("/events", eventRouter);
 // Orders routes base path
-app.use('/orders', orderRouter);
+app.use("/orders", orderRouter);
 
 app.post("/paypalwebhook", handlePayPalPaymentSuccessWebhook);
-
-
-
 
 export default app;

@@ -3,6 +3,8 @@ import {
   createOrderWithPayPal,
   createOrderWithStripe,
   createPaymentIntent,
+  downloadAllTicketsHandler,
+  downloadTicketHandler,
   getAllOrders,
   getAllOrdersForEvent,
   getAllOrdersForUser,
@@ -13,6 +15,7 @@ import mongoose from "mongoose";
 import { protect, restrictToAdmin } from "../middlewares/authMiddleware.js";
 import OrderTicketAssociation from "../models/orderTicketAssociation.js";
 import Order from "../models/Order.js";
+
 
 const orderRouter = express.Router();
 orderRouter.post("/stripe/createIntent", createPaymentIntent);
@@ -43,7 +46,10 @@ orderRouter.get("/one-order/:orderId", protect, restrictToAdmin, getOrderById);
 //Get events for a user
 orderRouter.get("/user", protect, getAllOrdersForUser); // Requires user authentication
 orderRouter.get("/all-tick", getAllTick); // Requires user authentication
-
+// Define a route to download PDF
+// Define your routes
+orderRouter.get("/download-ticket/:orderId/:ticketId", downloadTicketHandler);
+orderRouter.get("/download-all-tickets/:orderId", downloadAllTicketsHandler);
 // Define a route to delete all data in OrderTicketAssociation and Order
 orderRouter.delete("/deleteAllData", async (req, res) => {
   try {
