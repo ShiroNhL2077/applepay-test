@@ -1,4 +1,3 @@
-
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -21,7 +20,7 @@ const PaypalForm = ({ order, userLogged }) => {
       const response = await axios.post(
         token && userLogged
           ? `${process.env.REACT_APP_API_URL}orders/paypal/create`
-          : `${process.env.REACT_APP_API_URL}orders/paypal/create`,
+          : "https://backend-staging-eticket.rmsoftware.de/orders/paypal/guest/create",
         orderData,
         {
           headers: {
@@ -55,7 +54,7 @@ const PaypalForm = ({ order, userLogged }) => {
     try {
       // Capture the PayPal payment
       const captureDetails = await actions.order.capture();
-
+      console.log("Capture details:", captureDetails);
       // Check if the capture was successful
       if (captureDetails.status === "COMPLETED") {
         // Additional logic to update UI or show success message
